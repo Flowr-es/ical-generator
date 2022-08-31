@@ -9,6 +9,7 @@ interface ICalInternalAttendeeData {
     name: string | null;
     email: string | null;
     mailto: string | null;
+    sentBy: string | null;
     status: ICalAttendeeStatus | null;
     role: ICalAttendeeRole;
     rsvp: boolean | null;
@@ -22,6 +23,7 @@ export interface ICalAttendeeData {
     name?: string | null;
     email?: string | null;
     mailto?: string | null;
+    sentBy?: string | null;
     status?: ICalAttendeeStatus | null;
     role?: ICalAttendeeRole;
     rsvp?: boolean | null;
@@ -37,6 +39,7 @@ export interface ICalAttendeeJSONData {
     name: string | null;
     email: string | null;
     mailto: string | null;
+    sentBy: string | null;
     status: ICalAttendeeStatus | null;
     role: ICalAttendeeRole;
     rsvp: boolean | null;
@@ -105,6 +108,7 @@ export default class ICalAttendee {
             name: null,
             email: null,
             mailto: null,
+            sentBy: null,
             status: null,
             role: ICalAttendeeRole.REQ,
             rsvp: null,
@@ -121,6 +125,7 @@ export default class ICalAttendee {
         data.name !== undefined && this.name(data.name);
         data.email !== undefined && this.email(data.email);
         data.mailto !== undefined && this.mailto(data.mailto);
+        data.sentBy !== undefined && this.sentBy(data.sentBy);
         data.status !== undefined && this.status(data.status);
         data.role !== undefined && this.role(data.role);
         data.rsvp !== undefined && this.rsvp(data.rsvp);
@@ -191,6 +196,27 @@ export default class ICalAttendee {
         }
 
         this.data.mailto = mailto || null;
+        return this;
+    }
+
+
+    /**
+     * Get the acting user's email adress
+     * @since 3.3.0
+     */
+    sentBy(): string | null;
+
+    /**
+     * Set the acting user's email adress
+     * @since 3.3.0
+     */
+    sentBy(email: string | null): this;
+    sentBy(email?: string | null): this | string | null {
+        if (!email) {
+            return this.data.sentBy;
+        }
+
+        this.data.sentBy = email;
         return this;
     }
 
@@ -545,8 +571,13 @@ export default class ICalAttendee {
         }
 
         // RSVP
-        if (this.data.rsvp) {
+        if (this.data.rsvp !== null) {
             g += ';RSVP=' + this.data.rsvp.toString().toUpperCase();
+        }
+
+        // SENT-BY
+        if (this.data.sentBy !== null) {
+            g += ';SENT-BY="mailto:' + this.data.sentBy + '"';
         }
 
         // DELEGATED-TO
@@ -561,22 +592,22 @@ export default class ICalAttendee {
 
         // CN / Name
         if (this.data.name) {
-            g += ';CN="' + escape(this.data.name) + '"';
+            g += ';CN="' + escape(this.data.name, true) + '"';
         }
 
         // EMAIL
         if (this.data.email && this.data.mailto) {
-            g += ';EMAIL=' + escape(this.data.email);
+            g += ';EMAIL=' + escape(this.data.email, false);
         }
 
         // CUSTOM X ATTRIBUTES
         if(this.data.x.length) {
             g += ';' + this.data.x
-                .map(([key, value]) => key.toUpperCase() + '=' + escape(value))
+                .map(([key, value]) => key.toUpperCase() + '=' + escape(value, false))
                 .join(';');
         }
 
-        g += ':MAILTO:' + escape(this.data.mailto || this.data.email) + '\r\n';
+        g += ':MAILTO:' + escape(this.data.mailto || this.data.email, false) + '\r\n';
 
         return g;
     }

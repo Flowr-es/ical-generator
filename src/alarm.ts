@@ -424,7 +424,7 @@ export default class ICalAlarm {
         else {
             throw new Error(
                 '`attachment` needs to be a valid formed string or an object. See https://sebbo2002.github.io/' +
-                'ical-generator/develop/reference/classes/icalalarm.html#attach'
+                'ical-generator/develop/reference/classes/ICalAlarm.html#attach'
             );
         }
 
@@ -597,10 +597,10 @@ export default class ICalAlarm {
 
         // ATTACH
         if (this.data.type === 'audio' && this.data.attach && this.data.attach.mime) {
-            g += 'ATTACH;FMTTYPE=' + this.data.attach.mime + ':' + this.data.attach.uri + '\r\n';
+            g += 'ATTACH;FMTTYPE=' + escape(this.data.attach.mime, false) + ':' + escape(this.data.attach.uri, false) + '\r\n';
         }
         else if (this.data.type === 'audio' && this.data.attach) {
-            g += 'ATTACH;VALUE=URI:' + this.data.attach.uri + '\r\n';
+            g += 'ATTACH;VALUE=URI:' + escape(this.data.attach.uri, false) + '\r\n';
         }
         else if (this.data.type === 'audio') {
             g += 'ATTACH;VALUE=URI:Basso\r\n';
@@ -608,10 +608,10 @@ export default class ICalAlarm {
 
         // DESCRIPTION
         if (this.data.type === 'display' && this.data.description) {
-            g += 'DESCRIPTION:' + escape(this.data.description) + '\r\n';
+            g += 'DESCRIPTION:' + escape(this.data.description, false) + '\r\n';
         }
         else if (this.data.type === 'display') {
-            g += 'DESCRIPTION:' + escape(this.event.summary()) + '\r\n';
+            g += 'DESCRIPTION:' + escape(this.event.summary(), false) + '\r\n';
         }
 
         // CUSTOM X ATTRIBUTES

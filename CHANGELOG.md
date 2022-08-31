@@ -1,3 +1,150 @@
+## [3.5.2-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.5.1...v3.5.2-develop.1) (2022-08-30)
+
+## [3.5.1](https://github.com/sebbo2002/ical-generator/compare/v3.5.0...v3.5.1) (2022-07-28)
+
+
+### Bug Fixes
+
+* Remove private property from moment stub ([792adb6](https://github.com/sebbo2002/ical-generator/commit/792adb6985b88b69756916343d4c5c7929f5a82d)), closes [#411](https://github.com/sebbo2002/ical-generator/issues/411)
+
+## [3.5.1-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.5.0...v3.5.1-develop.1) (2022-07-28)
+
+
+### Bug Fixes
+
+* Remove private property from moment stub ([792adb6](https://github.com/sebbo2002/ical-generator/commit/792adb6985b88b69756916343d4c5c7929f5a82d)), closes [#411](https://github.com/sebbo2002/ical-generator/issues/411)
+
+# [3.5.0](https://github.com/sebbo2002/ical-generator/compare/v3.4.3...v3.5.0) (2022-07-27)
+
+
+### Features
+
+* Replace external types with stub types ([56cffc7](https://github.com/sebbo2002/ical-generator/commit/56cffc7a4e9f741e779d445bfaf749b6885a4504)), closes [#405](https://github.com/sebbo2002/ical-generator/issues/405)
+
+# [3.5.0-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.4.4-develop.8...v3.5.0-develop.1) (2022-07-25)
+
+
+### Features
+
+* Replace external types with stub types ([56cffc7](https://github.com/sebbo2002/ical-generator/commit/56cffc7a4e9f741e779d445bfaf749b6885a4504)), closes [#405](https://github.com/sebbo2002/ical-generator/issues/405)
+
+## [3.4.4-develop.8](https://github.com/sebbo2002/ical-generator/compare/v3.4.4-develop.7...v3.4.4-develop.8) (2022-07-06)
+
+## [3.4.4-develop.7](https://github.com/sebbo2002/ical-generator/compare/v3.4.4-develop.6...v3.4.4-develop.7) (2022-06-10)
+
+## [3.4.4-develop.6](https://github.com/sebbo2002/ical-generator/compare/v3.4.4-develop.5...v3.4.4-develop.6) (2022-06-09)
+
+## [3.4.4-develop.5](https://github.com/sebbo2002/ical-generator/compare/v3.4.4-develop.4...v3.4.4-develop.5) (2022-06-07)
+
+## [3.4.4-develop.4](https://github.com/sebbo2002/ical-generator/compare/v3.4.4-develop.3...v3.4.4-develop.4) (2022-06-03)
+
+## [3.4.4-develop.3](https://github.com/sebbo2002/ical-generator/compare/v3.4.4-develop.2...v3.4.4-develop.3) (2022-05-22)
+
+## [3.4.4-develop.2](https://github.com/sebbo2002/ical-generator/compare/v3.4.4-develop.1...v3.4.4-develop.2) (2022-05-19)
+
+
+### Reverts
+
+* Revert "ci: Remove GH_TOKEN and use GITHUB_TOKEN" ([b5c2eb6](https://github.com/sebbo2002/ical-generator/commit/b5c2eb66170b38bda1e49ad5bb5cf02bd13eb8e4))
+
+## [3.4.4-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.4.3...v3.4.4-develop.1) (2022-05-19)
+
+## [3.4.3](https://github.com/sebbo2002/ical-generator/compare/v3.4.2...v3.4.3) (2022-05-14)
+
+## [3.4.3-develop.2](https://github.com/sebbo2002/ical-generator/compare/v3.4.3-develop.1...v3.4.3-develop.2) (2022-05-13)
+
+## [3.4.3-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.4.2...v3.4.3-develop.1) (2022-05-01)
+
+## [3.4.2](https://github.com/sebbo2002/ical-generator/compare/v3.4.1...v3.4.2) (2022-04-28)
+
+
+### Bug Fixes
+
+* Do not escape quotes when not required ([08a4d62](https://github.com/sebbo2002/ical-generator/commit/08a4d626045c586302792b112c35496dd676af1d)), closes [#377](https://github.com/sebbo2002/ical-generator/issues/377)
+
+## [3.4.2-develop.3](https://github.com/sebbo2002/ical-generator/compare/v3.4.2-develop.2...v3.4.2-develop.3) (2022-04-28)
+
+## [3.4.2-develop.2](https://github.com/sebbo2002/ical-generator/compare/v3.4.2-develop.1...v3.4.2-develop.2) (2022-04-27)
+
+
+### Bug Fixes
+
+* Do not escape quotes when not required ([08a4d62](https://github.com/sebbo2002/ical-generator/commit/08a4d626045c586302792b112c35496dd676af1d)), closes [#377](https://github.com/sebbo2002/ical-generator/issues/377)
+
+## [3.4.2-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.4.1...v3.4.2-develop.1) (2022-04-09)
+
+## [3.4.1](https://github.com/sebbo2002/ical-generator/compare/v3.4.0...v3.4.1) (2022-03-31)
+
+## [3.4.1-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.4.0...v3.4.1-develop.1) (2022-03-31)
+
+# [3.4.0](https://github.com/sebbo2002/ical-generator/compare/v3.3.0...v3.4.0) (2022-03-21)
+
+
+### Features
+
+* Add Support for Sent By ([9aac3e0](https://github.com/sebbo2002/ical-generator/commit/9aac3e0e5e0bb54b1400da8ef42e1544f033a72a)), closes [#358](https://github.com/sebbo2002/ical-generator/issues/358)
+
+# [3.3.0](https://github.com/sebbo2002/ical-generator/compare/v3.2.1...v3.3.0) (2022-03-21)
+
+
+### Features
+
+* added `types` property to declaration file ([01518e0](https://github.com/sebbo2002/ical-generator/commit/01518e048d785724f01be69a77bce6b58e2843d8))
+
+## [3.2.1](https://github.com/sebbo2002/ical-generator/compare/v3.2.0...v3.2.1) (2022-01-28)
+
+
+### Bug Fixes
+
+* Update error URLs ([2628464](https://github.com/sebbo2002/ical-generator/commit/262846466808a043b4b241a17b38503c7949e78f)), closes [#343](https://github.com/sebbo2002/ical-generator/issues/343)
+
+## [3.2.1-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.2.0...v3.2.1-develop.1) (2022-01-18)
+
+
+### Bug Fixes
+
+* Update error URLs ([2628464](https://github.com/sebbo2002/ical-generator/commit/262846466808a043b4b241a17b38503c7949e78f)), closes [#343](https://github.com/sebbo2002/ical-generator/issues/343)
+
+# [3.2.0](https://github.com/sebbo2002/ical-generator/compare/v3.1.1...v3.2.0) (2022-01-12)
+
+
+### Bug Fixes
+
+* **Attendee:** Print RSVP also if rsvp is set to false ([27e5166](https://github.com/sebbo2002/ical-generator/commit/27e51668710c3f6eff4c3ad4c5e64028444aca05)), closes [#340](https://github.com/sebbo2002/ical-generator/issues/340)
+
+
+### Features
+
+* **Events:** Add `createAttachment` / `attachments` ([12a382f](https://github.com/sebbo2002/ical-generator/commit/12a382fedb798460891d327bd9c112b1c97c38ee)), closes [#335](https://github.com/sebbo2002/ical-generator/issues/335)
+
+# [3.2.0-develop.2](https://github.com/sebbo2002/ical-generator/compare/v3.2.0-develop.1...v3.2.0-develop.2) (2022-01-10)
+
+
+### Bug Fixes
+
+* **Attendee:** Print RSVP also if rsvp is set to false ([27e5166](https://github.com/sebbo2002/ical-generator/commit/27e51668710c3f6eff4c3ad4c5e64028444aca05)), closes [#340](https://github.com/sebbo2002/ical-generator/issues/340)
+
+# [3.2.0-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.1.1...v3.2.0-develop.1) (2022-01-03)
+
+
+### Features
+
+* **Events:** Add `createAttachment` / `attachments` ([12a382f](https://github.com/sebbo2002/ical-generator/commit/12a382fedb798460891d327bd9c112b1c97c38ee)), closes [#335](https://github.com/sebbo2002/ical-generator/issues/335)
+
+## [3.1.1](https://github.com/sebbo2002/ical-generator/compare/v3.1.0...v3.1.1) (2021-12-13)
+
+
+### Bug Fixes
+
+* **CI:** Fix DockerHub container release ([01b7534](https://github.com/sebbo2002/ical-generator/commit/01b753406d1f1ef24a949c7d7b946d99b779d013))
+
+## [3.1.1-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.1.0...v3.1.1-develop.1) (2021-12-06)
+
+
+### Bug Fixes
+
+* **CI:** Fix DockerHub container release ([01b7534](https://github.com/sebbo2002/ical-generator/commit/01b753406d1f1ef24a949c7d7b946d99b779d013))
+
 # [3.1.0](https://github.com/sebbo2002/ical-generator/compare/v3.0.1...v3.1.0) (2021-11-17)
 
 

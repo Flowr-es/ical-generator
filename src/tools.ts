@@ -1,13 +1,12 @@
 'use strict';
 
-
-import type {Moment, Duration} from 'moment';
-import type {Moment as MomentTZ} from 'moment-timezone';
-import type {Dayjs} from 'dayjs';
-import type {DateTime as LuxonDateTime} from 'luxon';
-import type { RRule } from 'rrule';
-
-import {ICalDateTimeValue, ICalOrganizer} from './types';
+import {
+    ICalDateTimeValue, ICalDayJsStub, ICalLuxonDateTimeStub,
+    ICalMomentDurationStub,
+    ICalMomentStub,
+    ICalMomentTimezoneStub,
+    ICalOrganizer, ICalRRuleStub
+} from './types';
 
 /**
  * Converts a valid date/time object supported by this library to a string.
@@ -115,8 +114,8 @@ export function formatDateTZ (timezone: string | null, property: string, date: I
 /**
  * Escapes special characters in the given string
  */
-export function escape (str: string | unknown): string {
-    return String(str).replace(/[\\;,"]/g, function (match) {
+export function escape (str: string | unknown, inQuotes: boolean): string {
+    return String(str).replace(inQuotes ? /[\\;,"]/g : /[\\;,]/g, function (match) {
         return '\\' + match;
     }).replace(/(?:\r\n|\r|\n)/g, '\\n');
 }
@@ -198,7 +197,7 @@ export function addOrGetCustomAttributes (data: {x: [string, string][]}, keyOrAr
 
 export function generateCustomAttributes (data: {x: [string, string][]}): string {
     const str = data.x
-        .map(([key, value]) => key.toUpperCase() + ':' + escape(value))
+        .map(([key, value]) => key.toUpperCase() + ':' + escape(value, false))
         .join('\r\n');
     return str.length ? str + '\r\n' : '';
 }
@@ -232,20 +231,21 @@ export function checkNameAndMail (attribute: string, value: string | ICalOrganiz
         result = {
             name: value.name,
             email: value.email,
-            mailto: value.mailto
+            mailto: value.mailto,
+            sentBy: value.sentBy
         };
     }
 
     if (!result && typeof value === 'string') {
         throw new Error(
             '`' + attribute + '` isn\'t formated correctly. See https://sebbo2002.github.io/ical-generator/develop/'+
-            'reference/interfaces/icalorganizer.html'
+            'reference/interfaces/ICalOrganizer.html'
         );
     }
     else if (!result) {
         throw new Error(
             '`' + attribute + '` needs to be a valid formed string or an object. See https://sebbo2002.github.io/'+
-            'ical-generator/develop/reference/interfaces/icalorganizer.html'
+            'ical-generator/develop/reference/interfaces/ICalOrganizer.html'
         );
     }
 
@@ -314,32 +314,32 @@ export function toDate(value: ICalDateTimeValue): Date {
     return value.toDate();
 }
 
-export function isMoment(value: ICalDateTimeValue): value is Moment {
+export function isMoment(value: ICalDateTimeValue): value is ICalMomentStub {
 
     // @ts-ignore
     return value != null && value._isAMomentObject != null;
 }
-export function isMomentTZ(value: ICalDateTimeValue): value is MomentTZ {
-    return isMoment(value) && typeof value.tz === 'function';
+export function isMomentTZ(value: ICalDateTimeValue): value is ICalMomentTimezoneStub {
+    return isMoment(value) && 'tz' in value && typeof value.tz === 'function';
 }
-export function isDayjs(value: ICalDateTimeValue): value is Dayjs {
+export function isDayjs(value: ICalDateTimeValue): value is ICalDayJsStub {
     return typeof value === 'object' &&
         value !== null &&
         !(value instanceof Date) &&
         !isMoment(value) &&
         !isLuxonDate(value);
 }
-export function isLuxonDate(value: ICalDateTimeValue): value is LuxonDateTime {
-    return typeof value === 'object' && value !== null && typeof (value as LuxonDateTime).toJSDate === 'function';
+export function isLuxonDate(value: ICalDateTimeValue): value is ICalLuxonDateTimeStub {
+    return typeof value === 'object' && value !== null && 'toJSDate' in value && typeof value.toJSDate === 'function';
 }
 
-export function isMomentDuration(value: unknown): value is Duration {
+export function isMomentDuration(value: unknown): value is ICalMomentDurationStub {
 
     // @ts-ignore
     return value !== null && typeof value === 'object' && typeof value.asSeconds === 'function';
 }
 
-export function isRRule(value: unknown): value is RRule {
+export function isRRule(value: unknown): value is ICalRRuleStub {
 
     // @ts-ignore
     return value !== null && typeof value === 'object' && typeof value.between === 'function' && typeof value.toString === 'function';

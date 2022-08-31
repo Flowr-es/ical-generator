@@ -1,6 +1,5 @@
 'use strict';
 
-import type { Duration } from 'moment-timezone';
 import {
     addOrGetCustomAttributes,
     checkEnum,
@@ -9,11 +8,11 @@ import {
     isMomentDuration,
     toDurationString
 } from './tools';
-import ICalEvent, { ICalEventData, ICalEventJSONData } from './event';
-import { writeFile, writeFileSync } from 'fs';
-import { promises as fsPromises } from 'fs';
-import { ServerResponse } from 'http';
-import { ICalTimezone } from './types';
+
+import ICalEvent, {ICalEventData, ICalEventJSONData} from './event';
+import {writeFile, writeFileSync, promises as fsPromises} from 'fs';
+import {ServerResponse} from 'http';
+import { ICalMomentDurationStub, ICalTimezone } from './types';
 
 export interface ICalCalendarData {
     prodId?: ICalCalendarProdIdData | string;
@@ -24,8 +23,8 @@ export interface ICalCalendarData {
     source?: string | null;
     url?: string | null;
     scale?: string | null;
-    ttl?: number | Duration | null;
     timezones?: string[];
+    ttl?: number | ICalMomentDurationStub | null;
     events?: (ICalEvent | ICalEventData)[];
     x?: { key: string, value: string }[] | [string, string][] | Record<string, string>;
 }
@@ -185,8 +184,8 @@ export default class ICalCalendar {
         }
         if (typeof prodId === 'string') {
             throw new Error(
-                '`prodId` isn\'t formated correctly. See https://sebbo2002.github.io/ical-generator/develop/reference/' +
-                'classes/icalcalendar.html#prodid'
+                '`prodId` isn\'t formated correctly. See https://sebbo2002.github.io/ical-generator/develop/reference/'+
+                'classes/ICalCalendar.html#prodId'
             );
         }
 
@@ -476,8 +475,8 @@ export default class ICalCalendar {
      *
      * @since 0.2.5
      */
-    ttl(ttl: number | Duration | null): this;
-    ttl(ttl?: number | Duration | null): this | number | null {
+    ttl(ttl: number | ICalMomentDurationStub | null): this;
+    ttl(ttl?: number | ICalMomentDurationStub | null): this | number | null {
         if (ttl === undefined) {
             return this.data.ttl;
         }

@@ -6,9 +6,12 @@ on:
 jobs:
   stale:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
     steps:
       - name: 🧹 Cleanup issues & pull requests
-        uses: actions/stale@v4
+        uses: actions/stale@v5
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           stale-issue-message: |

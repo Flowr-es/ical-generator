@@ -1,6 +1,5 @@
 'use strict';
 
-import type {RRule} from 'rrule';
 import uuid from 'uuid-random';
 import {
     addOrGetCustomAttributes,
@@ -10,7 +9,8 @@ import {
     escape,
     formatDate,
     formatDateTZ,
-    generateCustomAttributes, isRRule,
+    generateCustomAttributes,
+    isRRule,
     toDate,
     toJSON
 } from './tools';
@@ -25,6 +25,7 @@ import {
     ICalLocation,
     ICalOrganizer,
     ICalRepeatingOptions,
+    ICalRRuleStub,
     ICalWeekday
 } from './types';
 
@@ -63,7 +64,7 @@ export interface ICalEventData {
     stamp?: ICalDateTimeValue,
     allDay?: boolean,
     floating?: boolean,
-    repeating?: ICalRepeatingOptions | RRule | string | null,
+    repeating?: ICalRepeatingOptions | ICalRRuleStub | string | null,
     summary?: string,
     location?: ICalLocation | string | null,
     description?: ICalDescription | string | null,
@@ -75,6 +76,7 @@ export interface ICalEventData {
     busystatus?: ICalEventBusyStatus | null,
     priority?: number | null,
     url?: string | null,
+    attachments?: string[],
     transparency?: ICalEventTransparency | null,
     created?: ICalDateTimeValue | null,
     lastModified?: ICalDateTimeValue | null,
@@ -92,7 +94,7 @@ interface ICalEventInternalData {
     stamp: ICalDateTimeValue,
     allDay: boolean,
     floating: boolean,
-    repeating: ICalEventInternalRepeatingData | RRule | string | null,
+    repeating: ICalEventInternalRepeatingData | ICalRRuleStub | string | null,
     summary: string,
     location: ICalLocation | null,
     description: ICalDescription | null,
@@ -104,6 +106,7 @@ interface ICalEventInternalData {
     busystatus: ICalEventBusyStatus | null,
     priority: number | null,
     url: string | null,
+    attachments: string[],
     transparency: ICalEventTransparency | null,
     created: ICalDateTimeValue | null,
     lastModified: ICalDateTimeValue | null,
@@ -133,6 +136,7 @@ export interface ICalEventJSONData {
     busystatus: ICalEventBusyStatus | null,
     priority?: number | null,
     url: string | null,
+    attachments: string[],
     transparency: ICalEventTransparency | null,
     created: string | null,
     lastModified: string | null,
@@ -195,6 +199,7 @@ export default class ICalEvent {
             busystatus: null,
             priority: null,
             url: null,
+            attachments: [],
             transparency: null,
             created: null,
             lastModified: null,
@@ -228,6 +233,7 @@ export default class ICalEvent {
         data.busystatus !== undefined && this.busystatus(data.busystatus);
         data.priority !== undefined && this.priority(data.priority);
         data.url !== undefined && this.url(data.url);
+        data.attachments !== undefined && this.attachments(data.attachments);
         data.transparency !== undefined && this.transparency(data.transparency);
         data.created !== undefined && this.created(data.created);
         data.lastModified !== undefined && this.lastModified(data.lastModified);
@@ -550,7 +556,7 @@ export default class ICalEvent {
      * Get the event's repeating options
      * @since 0.2.0
      */
-    repeating(): ICalEventInternalRepeatingData | RRule | string | null;
+    repeating(): ICalEventInternalRepeatingData | ICalRRuleStub | string | null;
 
     /**
      * Set the event's repeating options by passing an [[`ICalRepeatingOptions`]] object.
@@ -579,7 +585,7 @@ export default class ICalEvent {
      * Set the event's repeating options by passing an [RRule object](https://github.com/jakubroztocil/rrule).
      * @since 2.0.0-develop.5
      */
-    repeating(repeating: RRule | null): this;
+    repeating(repeating: ICalRRuleStub | null): this;
 
     /**
      * Set the events repeating options by passing a string which is inserted in the ical file.
@@ -590,8 +596,8 @@ export default class ICalEvent {
     /**
      * @internal
      */
-    repeating(repeating: ICalRepeatingOptions | RRule | string | null): this;
-    repeating(repeating?: ICalRepeatingOptions | RRule | string | null): this | ICalEventInternalRepeatingData | RRule | string | null {
+    repeating(repeating: ICalRepeatingOptions | ICalRRuleStub | string | null): this;
+    repeating(repeating?: ICalRepeatingOptions | ICalRRuleStub | string | null): this | ICalEventInternalRepeatingData | ICalRRuleStub | string | null {
         if (repeating === undefined) {
             return this.data.repeating;
         }
@@ -748,7 +754,7 @@ export default class ICalEvent {
         ) {
             throw new Error(
                 '`location` isn\'t formatted correctly. See https://sebbo2002.github.io/ical-generator/'+
-                'develop/reference/classes/icalevent.html#location'
+                'develop/reference/classes/ICalEvent.html#location'
             );
         }
 
@@ -818,13 +824,14 @@ export default class ICalEvent {
      * event.organizer('Organizer\'s Name <organizer@example.com>');
      * ```
      *
-     * You can also add an explicit `mailto` email address.
+     * You can also add an explicit `mailto` email address or or the sentBy address.
      *
      * ```javascript
      *     event.organizer({
      *    name: 'Organizer\'s Name',
      *    email: 'organizer@example.com',
-     *    mailto: 'explicit@mailto.com'
+     *    mailto: 'explicit@mailto.com',
+     *    sentBy: 'substitute@example.com'
      * })
      * ```
      *
@@ -926,11 +933,11 @@ export default class ICalEvent {
      * ```javascript
      * const cal = ical();
      * const event = cal.createEvent();
-     * const alarm = event.createAlarm({type: 'display', trigger: 300});
+     * const alarm = event.createAlarm({type: ICalAlarmType.display, trigger: 300});
      *
      * // add another alarm
      * event.createAlarm({
-     *     type: 'audio',
+     *     type: ICalAlarmType.audio,
      *     trigger: 300, // 5min before event
      * });
      * ```
@@ -957,8 +964,8 @@ export default class ICalEvent {
      * const event = ical().createEvent();
      *
      * cal.alarms([
-     *     {type: 'display', trigger: 600},
-     *     {type: 'audio', trigger: 300}
+     *     {type: ICalAlarmType.display, trigger: 600},
+     *     {type: ICalAlarmType.audio, trigger: 300}
      * ]);
      *
      * cal.alarms(); // --> [ICalAlarm, ICalAlarm]
@@ -1150,6 +1157,59 @@ export default class ICalEvent {
         }
 
         this.data.url = url ? String(url) : null;
+        return this;
+    }
+
+    /**
+     * Adds an attachment to the event by adding the file URL to the calendar.
+     *
+     * `ical-generator` only supports external attachments. File attachments that
+     * are directly included in the file are not supported, because otherwise the
+     * calendar file could easily become unfavourably large.
+     *
+     * ```javascript
+     * const cal = ical();
+     * const event = cal.createEvent();
+     * event.createAttachment('https://files.sebbo.net/calendar/attachments/foo');
+     * ```
+     *
+     * @since 3.2.0-develop.1
+     */
+    createAttachment(url: string): this {
+        this.data.attachments.push(url);
+        return this;
+    }
+
+
+    /**
+     * Get all attachment urls
+     * @since 3.2.0-develop.1
+     */
+    attachments(): string[];
+
+    /**
+     * Add one or multiple alarms
+     *
+     * ```javascript
+     * const event = ical().createEvent();
+     *
+     * cal.attachments([
+     *     'https://files.sebbo.net/calendar/attachments/foo',
+     *     'https://files.sebbo.net/calendar/attachments/bar'
+     * ]);
+     *
+     * cal.attachments(); // --> [string, string]
+     ```
+     *
+     * 3.2.0-develop.1
+     */
+    attachments(attachments: string[]): this;
+    attachments(attachments?: string[]): this | string[] {
+        if (!attachments) {
+            return this.data.attachments;
+        }
+
+        attachments.forEach((attachment: string) => this.createAttachment(attachment));
         return this;
     }
 
@@ -1486,52 +1546,58 @@ export default class ICalEvent {
         }
 
         // SUMMARY
-        g += 'SUMMARY:' + escape(this.data.summary) + '\r\n';
+        g += 'SUMMARY:' + escape(this.data.summary, false) + '\r\n';
 
         // TRANSPARENCY
         if (this.data.transparency) {
-            g += 'TRANSP:' + escape(this.data.transparency) + '\r\n';
+            g += 'TRANSP:' + escape(this.data.transparency, false) + '\r\n';
         }
 
         // LOCATION
         if (this.data.location?.title) {
             g += 'LOCATION:' + escape(
                 this.data.location.title +
-                (this.data.location.address ? '\n' + this.data.location.address : '')
+                (this.data.location.address ? '\n' + this.data.location.address : ''),
+                false
             ) + '\r\n';
 
             if (this.data.location.radius && this.data.location.geo) {
                 g += 'X-APPLE-STRUCTURED-LOCATION;VALUE=URI;' +
-                    (this.data.location.address ? 'X-ADDRESS=' + escape(this.data.location.address) + ';' : '') +
-                    'X-APPLE-RADIUS=' + escape(this.data.location.radius) + ';' +
-                    'X-TITLE=' + escape(this.data.location.title) +
-                    ':geo:' + escape(this.data.location.geo?.lat) + ',' + escape(this.data.location.geo?.lon) + '\r\n';
+                    (this.data.location.address ? 'X-ADDRESS=' + escape(this.data.location.address, false) + ';' : '') +
+                    'X-APPLE-RADIUS=' + escape(this.data.location.radius, false) + ';' +
+                    'X-TITLE=' + escape(this.data.location.title, false) +
+                    ':geo:' + escape(this.data.location.geo?.lat, false) + ',' +
+                    escape(this.data.location.geo?.lon, false) + '\r\n';
             }
 
             if (this.data.location.geo) {
-                g += 'GEO:' + escape(this.data.location.geo?.lat) + ';' + escape(this.data.location.geo?.lon) + '\r\n';
+                g += 'GEO:' + escape(this.data.location.geo?.lat, false) + ';' +
+                    escape(this.data.location.geo?.lon, false) + '\r\n';
             }
         }
 
         // DESCRIPTION
         if (this.data.description) {
-            g += 'DESCRIPTION:' + escape(this.data.description.plain) + '\r\n';
+            g += 'DESCRIPTION:' + escape(this.data.description.plain, false) + '\r\n';
 
             // HTML DESCRIPTION
             if (this.data.description.html) {
-                g += 'X-ALT-DESC;FMTTYPE=text/html:' + escape(this.data.description.html) + '\r\n';
+                g += 'X-ALT-DESC;FMTTYPE=text/html:' + escape(this.data.description.html, false) + '\r\n';
             }
         }
 
         // ORGANIZER
         if (this.data.organizer) {
-            g += 'ORGANIZER;CN="' + escape(this.data.organizer.name) + '"';
+            g += 'ORGANIZER;CN="' + escape(this.data.organizer.name, true) + '"';
 
+            if (this.data.organizer.sentBy) {
+                g += ';SENT-BY="mailto:' + escape(this.data.organizer.sentBy, true) + '"';
+            }
             if (this.data.organizer.email && this.data.organizer.mailto) {
-                g += ';EMAIL=' + escape(this.data.organizer.email);
+                g += ';EMAIL=' + escape(this.data.organizer.email, false);
             }
             if(this.data.organizer.email) {
-                g += ':mailto:' + escape(this.data.organizer.mailto || this.data.organizer.email);
+                g += ':mailto:' + escape(this.data.organizer.mailto || this.data.organizer.email, false);
             }
             g += '\r\n';
         }
@@ -1555,7 +1621,14 @@ export default class ICalEvent {
 
         // URL
         if (this.data.url) {
-            g += 'URL;VALUE=URI:' + escape(this.data.url) + '\r\n';
+            g += 'URL;VALUE=URI:' + escape(this.data.url, false) + '\r\n';
+        }
+
+        // ATTACHMENT
+        if (this.data.attachments.length > 0) {
+            this.data.attachments.forEach(url => {
+                g += 'ATTACH:' + escape(url, false) + '\r\n';
+            });
         }
 
         // STATUS
