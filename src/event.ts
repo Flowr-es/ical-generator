@@ -83,7 +83,7 @@ export interface ICalEventData {
     class?: ICalEventClass | null;
     x?: {key: string, value: string}[] | [string, string][] | Record<string, string>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    internalData?: {key: string, value: any}[];
+    internalData?: any;
 }
 
 interface ICalEventInternalData {
@@ -115,7 +115,7 @@ interface ICalEventInternalData {
     class: ICalEventClass | null,
     x: [string, string][];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    internalData?: {key: string, value: any}[];
+    internalData?: any;
 }
 
 export interface ICalEventJSONData {
@@ -146,7 +146,7 @@ export interface ICalEventJSONData {
     lastModified: string | null,
     x: {key: string, value: string}[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    internalData?: {key: string, value: any}[];
+    internalData?: any;
 }
 
 interface ICalEventInternalRepeatingData {
