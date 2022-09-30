@@ -82,6 +82,8 @@ export interface ICalEventData {
     lastModified?: ICalDateTimeValue | null,
     class?: ICalEventClass | null;
     x?: {key: string, value: string}[] | [string, string][] | Record<string, string>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    internalData?: {key: string, value: any}[];
 }
 
 interface ICalEventInternalData {
@@ -112,6 +114,8 @@ interface ICalEventInternalData {
     lastModified: ICalDateTimeValue | null,
     class: ICalEventClass | null,
     x: [string, string][];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    internalData?: {key: string, value: any}[];
 }
 
 export interface ICalEventJSONData {
@@ -141,6 +145,8 @@ export interface ICalEventJSONData {
     created: string | null,
     lastModified: string | null,
     x: {key: string, value: string}[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    internalData?: {key: string, value: any}[];
 }
 
 interface ICalEventInternalRepeatingData {
@@ -239,6 +245,7 @@ export default class ICalEvent {
         data.lastModified !== undefined && this.lastModified(data.lastModified);
         data.class !== undefined && this.class(data.class);
         data.x !== undefined && this.x(data.x);
+        data.internalData !== undefined && (this.data.internalData = data.internalData);
     }
 
     /**
