@@ -1,3 +1,51 @@
+## [3.6.1](https://github.com/sebbo2002/ical-generator/compare/v3.6.0...v3.6.1) (2022-12-27)
+
+
+### Bug Fixes
+
+* **Event:** Return floating repeating until/excluded dates if floating ([011123e](https://github.com/sebbo2002/ical-generator/commit/011123ee284f8355203f2a2f2f2dc06b22e478af)), closes [#442](https://github.com/sebbo2002/ical-generator/issues/442)
+
+## [3.6.1-develop.3](https://github.com/sebbo2002/ical-generator/compare/v3.6.1-develop.2...v3.6.1-develop.3) (2022-12-20)
+
+
+### Bug Fixes
+
+* **Event:** Return floating repeating until/excluded dates if floating ([011123e](https://github.com/sebbo2002/ical-generator/commit/011123ee284f8355203f2a2f2f2dc06b22e478af)), closes [#442](https://github.com/sebbo2002/ical-generator/issues/442)
+
+## [3.6.1-develop.2](https://github.com/sebbo2002/ical-generator/compare/v3.6.1-develop.1...v3.6.1-develop.2) (2022-12-11)
+
+## [3.6.1-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.6.0...v3.6.1-develop.1) (2022-12-04)
+
+# [3.6.0](https://github.com/sebbo2002/ical-generator/compare/v3.5.2...v3.6.0) (2022-10-11)
+
+
+### Features
+
+* **Event:** Update `bySetPos` and `byMonthDay` ([b19e94b](https://github.com/sebbo2002/ical-generator/commit/b19e94bdc9408acfb6e64d93de614ad25edb4ad0)), closes [#430](https://github.com/sebbo2002/ical-generator/issues/430)
+
+# [3.6.0-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.5.2...v3.6.0-develop.1) (2022-10-10)
+
+
+### Features
+
+* **Event:** Update `bySetPos` and `byMonthDay` ([b19e94b](https://github.com/sebbo2002/ical-generator/commit/b19e94bdc9408acfb6e64d93de614ad25edb4ad0)), closes [#430](https://github.com/sebbo2002/ical-generator/issues/430)
+
+## [3.5.2](https://github.com/sebbo2002/ical-generator/compare/v3.5.1...v3.5.2) (2022-09-24)
+
+
+### Bug Fixes
+
+* Include source files in npm module to allow sourcemap resolving ([2760b75](https://github.com/sebbo2002/ical-generator/commit/2760b75e67c2eb224ae1c38e8de94b4056cda7c2)), closes [#426](https://github.com/sebbo2002/ical-generator/issues/426)
+
+## [3.5.2-develop.3](https://github.com/sebbo2002/ical-generator/compare/v3.5.2-develop.2...v3.5.2-develop.3) (2022-09-24)
+
+## [3.5.2-develop.2](https://github.com/sebbo2002/ical-generator/compare/v3.5.2-develop.1...v3.5.2-develop.2) (2022-09-24)
+
+
+### Bug Fixes
+
+* Include source files in npm module to allow sourcemap resolving ([2760b75](https://github.com/sebbo2002/ical-generator/commit/2760b75e67c2eb224ae1c38e8de94b4056cda7c2)), closes [#426](https://github.com/sebbo2002/ical-generator/issues/426)
+
 ## [3.5.2-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.5.1...v3.5.2-develop.1) (2022-08-30)
 
 ## [3.5.1](https://github.com/sebbo2002/ical-generator/compare/v3.5.0...v3.5.1) (2022-07-28)

@@ -157,7 +157,7 @@ interface ICalEventInternalRepeatingData {
     byDay?: ICalWeekday[];
     byMonth?: number[];
     byMonthDay?: number[];
-    bySetPos?: number;
+    bySetPos?: number[];
     exclude?: ICalDateTimeValue[];
     startOfWeek?: ICalWeekday;
 }
@@ -662,7 +662,7 @@ export default class ICalEvent {
 
 
             this.data.repeating.byMonthDay = byMonthDayArray.map(monthDay => {
-                if (typeof monthDay !== 'number' || monthDay < 1 || monthDay > 31) {
+                if (typeof monthDay !== 'number' || monthDay < -31 || monthDay > 31 || monthDay === 0) {
                     throw new Error('`repeating.byMonthDay` contains invalid value `' + monthDay + '`!');
                 }
 
@@ -674,12 +674,13 @@ export default class ICalEvent {
             if (!this.data.repeating.byDay) {
                 throw '`repeating.bySetPos` must be used along with `repeating.byDay`!';
             }
-            if (typeof repeating.bySetPos !== 'number' || repeating.bySetPos < -1 || repeating.bySetPos > 4) {
-                throw '`repeating.bySetPos` contains invalid value `' + repeating.bySetPos + '`!';
-            }
-
-            this.data.repeating.byDay.splice(1);
-            this.data.repeating.bySetPos = repeating.bySetPos;
+            const bySetPosArray = Array.isArray(repeating.bySetPos) ? repeating.bySetPos : [repeating.bySetPos];
+            this.data.repeating.bySetPos = bySetPosArray.map(bySetPos => {
+                if (typeof bySetPos !== 'number' || bySetPos < -366 || bySetPos > 366 || bySetPos === 0) {
+                    throw '`repeating.bySetPos` contains invalid value `' + bySetPos + '`!';
+                }
+                return bySetPos;
+            });
         }
 
         if (repeating.exclude) {
@@ -1497,7 +1498,7 @@ export default class ICalEvent {
             }
 
             if (this.data.repeating.until) {
-                g += ';UNTIL=' + formatDate(this.calendar.timezone(), this.data.repeating.until);
+                g += ';UNTIL=' + formatDate(this.calendar.timezone(), this.data.repeating.until, false, this.floating());
             }
 
             if (this.data.repeating.byDay) {
@@ -1513,7 +1514,7 @@ export default class ICalEvent {
             }
 
             if (this.data.repeating.bySetPos) {
-                g += ';BYSETPOS=' + this.data.repeating.bySetPos;
+                g += ';BYSETPOS=' + this.data.repeating.bySetPos.join(',');
             }
 
             if (this.data.repeating.startOfWeek) {
@@ -1540,7 +1541,7 @@ export default class ICalEvent {
                     }
                     else {
                         g += ':' + this.data.repeating.exclude.map(excludedDate => {
-                            return formatDate(this.timezone(), excludedDate);
+                            return formatDate(this.timezone(), excludedDate, false, this.floating());
                         }).join(',') + '\r\n';
                     }
                 }
