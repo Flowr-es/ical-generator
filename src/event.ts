@@ -1,6 +1,10 @@
 'use strict';
 
 import uuid from 'uuid-random';
+import ICalAlarm, { ICalAlarmData } from './alarm';
+import ICalAttendee, { ICalAttendeeData } from './attendee';
+import ICalCalendar from './calendar';
+import ICalCategory, { ICalCategoryData } from './category';
 import {
     addOrGetCustomAttributes,
     checkDate,
@@ -14,18 +18,14 @@ import {
     toDate,
     toJSON
 } from './tools';
-import ICalAttendee, {ICalAttendeeData} from './attendee';
-import ICalAlarm, {ICalAlarmData} from './alarm';
-import ICalCategory, {ICalCategoryData} from './category';
-import ICalCalendar from './calendar';
 import {
     ICalDateTimeValue,
     ICalDescription,
     ICalEventRepeatingFreq,
     ICalLocation,
     ICalOrganizer,
-    ICalRepeatingOptions,
     ICalRRuleStub,
+    ICalRepeatingOptions,
     ICalWeekday
 } from './types';
 
@@ -210,7 +210,8 @@ export default class ICalEvent {
             created: null,
             lastModified: null,
             class: null,
-            x: []
+            x: [],
+            internalData: null
         };
 
         this.calendar = calendar;
