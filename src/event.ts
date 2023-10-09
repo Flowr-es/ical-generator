@@ -1,10 +1,14 @@
 'use strict';
 
 import uuid from 'uuid-random';
-import ICalAlarm, { ICalAlarmData } from './alarm';
-import ICalAttendee, { ICalAttendeeData } from './attendee';
-import ICalCalendar from './calendar';
-import ICalCategory, { ICalCategoryData } from './category';
+// import ICalAlarm, { ICalAlarmData } from './alarm';
+// import ICalAttendee, { ICalAttendeeData } from './attendee';
+// import ICalCalendar from './calendar';
+// import ICalCategory, { ICalCategoryData } from './category';
+import ICalAlarm, { ICalAlarmData } from './alarm.js';
+import ICalAttendee, { ICalAttendeeData } from './attendee.js';
+import ICalCalendar from './calendar.js';
+import ICalCategory, { ICalCategoryData } from './category.js';
 import {
     addOrGetCustomAttributes,
     checkDate,
@@ -17,7 +21,8 @@ import {
     isRRule,
     toDate,
     toJSON
-} from './tools';
+    // } from './tools';
+} from './tools.js';
 import {
     ICalDateTimeValue,
     ICalDescription,
@@ -27,7 +32,7 @@ import {
     ICalRRuleStub,
     ICalRepeatingOptions,
     ICalWeekday
-} from './types';
+} from './types.js';
 
 
 export enum ICalEventStatus {
@@ -1094,7 +1099,7 @@ export default class ICalEvent {
      *
      * ```javascript
      * import ical, {ICalEventBusyStatus} from 'ical-generator';
-     * event.busystatus(ICalEventStatus.BUSY);
+     * event.busystatus(ICalEventBusyStatus.BUSY);
      * ```
      *
      * @since 1.0.2
@@ -1421,7 +1426,7 @@ export default class ICalEvent {
         }
         else if(this.data.repeating) {
             repeating = Object.assign({}, this.data.repeating, {
-                until: toJSON(this.data.repeating.until),
+                until: toJSON(this.data.repeating.until) || undefined,
                 exclude: this.data.repeating.exclude?.map(d => toJSON(d)),
             });
         }
@@ -1480,12 +1485,18 @@ export default class ICalEvent {
 
         // REPEATING
         if(isRRule(this.data.repeating) || typeof this.data.repeating === 'string') {
-            g += this.data.repeating
+            let repeating = this.data.repeating
                 .toString()
                 .replace(/\r\n/g, '\n')
                 .split('\n')
                 .filter(l => l && !l.startsWith('DTSTART:'))
-                .join('\r\n') + '\r\n';
+                .join('\r\n');
+
+            if(!repeating.includes('\r\n') && !repeating.startsWith('RRULE:')) {
+                repeating = 'RRULE:' + repeating;
+            }
+
+            g += repeating.trim() + '\r\n';
         }
         else if (this.data.repeating) {
             g += 'RRULE:FREQ=' + this.data.repeating.freq;

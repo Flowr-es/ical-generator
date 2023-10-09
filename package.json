@@ -14,38 +14,45 @@
   },
   "description": "ical-generator is a small piece of code which generates ical calendar files",
   "devDependencies": {
-    "@qiwi/semantic-release-gh-pages-plugin": "^5.2.3",
-    "@semantic-release/changelog": "^6.0.2",
+    "@qiwi/semantic-release-gh-pages-plugin": "^5.2.6",
+    "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
-    "@semantic-release/npm": "^9.0.1",
-    "@touch4it/ical-timezones": "^1.8.1",
-    "@types/luxon": "^3.1.0",
+    "@semantic-release/npm": "^10.0.4",
+    "@touch4it/ical-timezones": "^1.9.0",
+    "@types/luxon": "^3.3.1",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^18.11.11",
-    "@typescript-eslint/eslint-plugin": "^5.45.1",
-    "@typescript-eslint/parser": "^5.45.1",
-    "dayjs": "^1.11.7",
-    "eslint": "^8.29.0",
-    "eslint-plugin-jsonc": "^2.5.0",
+    "@types/node": "^20.4.2",
+    "@typescript-eslint/eslint-plugin": "^6.2.1",
+    "@typescript-eslint/parser": "^6.2.1",
+    "c8": "^8.0.1",
+    "dayjs": "^1.11.9",
+    "eslint": "^8.45.0",
+    "eslint-plugin-jsonc": "^2.9.0",
+    "esm": "^3.2.25",
     "license-checker": "^25.0.1",
-    "luxon": "^3.1.1",
+    "luxon": "^3.3.0",
     "mocha": "^10.2.0",
     "mochawesome": "^7.1.3",
     "moment": "^2.29.4",
-    "moment-timezone": "^0.5.40",
+    "moment-timezone": "^0.5.43",
     "nyc": "^15.1.0",
     "portfinder": "^1.0.32",
-    "rrule": "^2.7.1",
-    "semantic-release": "^19.0.5",
+    "rrule": "^2.7.2",
+    "semantic-release": "^21.0.7",
     "semantic-release-license": "^1.0.2",
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.1",
-    "typedoc": "^0.23.23",
-    "typescript": "^4.9.4"
+    "tsup": "^7.2.0",
+    "typedoc": "^0.24.8",
+    "typescript": "^5.1.5"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": "^16.0.0 || >=18.0.0"
+  },
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
   },
   "files": [
     "/src",
@@ -66,9 +73,11 @@
     "alarms"
   ],
   "license": "MIT",
-  "main": "./dist/index.js",
+  "main-old": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "name": "@flowr-es/ical-generator",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "peerDependencies": {
     "@touch4it/ical-timezones": ">=1.6.0",
     "@types/luxon": ">= 1.26.0",
@@ -116,15 +125,16 @@
   },
   "runkitExampleFilename": "examples/example-runkit.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsup && cp ./dist/index.d.ts ./dist/index.d.cts",
     "build-all": "./.github/workflows/build.sh",
-    "coverage": "nyc mocha",
+    "coverage": "c8 mocha",
     "develop": "ts-node ./src/bin/start.ts",
     "example": "node ./dist/examples/push.js",
     "license-check": "license-checker --production --summary",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint . --ext .ts,.js,.json",
     "start": "node ./dist/bin/start.js",
     "test": "mocha"
   },
-  "version": "3.6.2"
+  "type": "module",
+  "version": "5.0.1"
 }

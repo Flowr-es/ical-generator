@@ -1,3 +1,149 @@
+## [5.0.1](https://github.com/sebbo2002/ical-generator/compare/v5.0.0...v5.0.1) (2023-08-17)
+
+
+### Bug Fixes
+
+* double-quotes and missing filename variable ([30fcccd](https://github.com/sebbo2002/ical-generator/commit/30fcccdfb1253c37f9211833a6d74ecbf953b892))
+* indentation, semicolons and quoting ([2dd4d24](https://github.com/sebbo2002/ical-generator/commit/2dd4d2494d18af843a22005a61627a3461ec29e2))
+
+## [5.0.1-develop.1](https://github.com/sebbo2002/ical-generator/compare/v5.0.0...v5.0.1-develop.1) (2023-07-30)
+
+
+### Bug Fixes
+
+* double-quotes and missing filename variable ([30fcccd](https://github.com/sebbo2002/ical-generator/commit/30fcccdfb1253c37f9211833a6d74ecbf953b892))
+* indentation, semicolons and quoting ([2dd4d24](https://github.com/sebbo2002/ical-generator/commit/2dd4d2494d18af843a22005a61627a3461ec29e2))
+
+# [5.0.0](https://github.com/sebbo2002/ical-generator/compare/v4.1.0...v5.0.0) (2023-06-14)
+
+
+### Build System
+
+* Deprecate node.js v14 / v17 ([7a2de45](https://github.com/sebbo2002/ical-generator/commit/7a2de45c12f19a1ec441b3a004f4aa935efc197c))
+
+
+### BREAKING CHANGES
+
+* The node.js versions v14 and v17 are no longer maintained and are therefore no longer supported. See https://nodejs.dev/en/about/releases/ for more details on node.js release cycles.
+
+# [5.0.0-develop.1](https://github.com/sebbo2002/ical-generator/compare/v4.1.0...v5.0.0-develop.1) (2023-06-14)
+
+
+### Build System
+
+* Deprecate node.js v14 / v17 ([7a2de45](https://github.com/sebbo2002/ical-generator/commit/7a2de45c12f19a1ec441b3a004f4aa935efc197c))
+
+
+### BREAKING CHANGES
+
+* The node.js versions v14 and v17 are no longer maintained and are therefore no longer supported. See https://nodejs.dev/en/about/releases/ for more details on node.js release cycles.
+
+# [4.1.0](https://github.com/sebbo2002/ical-generator/compare/v4.0.0...v4.1.0) (2023-05-04)
+
+
+### Bug Fixes
+
+* Allow `null` return value for Luxon 3.3's DateTime.toJSON() ([bee19a8](https://github.com/sebbo2002/ical-generator/commit/bee19a8e70bc690b93175c2da2a35240c55032bd)), closes [#482](https://github.com/sebbo2002/ical-generator/issues/482) [#485](https://github.com/sebbo2002/ical-generator/issues/485)
+* revent changes to package.json version ([916e460](https://github.com/sebbo2002/ical-generator/commit/916e460af591ff1ebb1c757dfc9762667331f598))
+* revert package-lock.json ([a8d8f2d](https://github.com/sebbo2002/ical-generator/commit/a8d8f2d45b039e80689e3cf9ac774645d6b3ccc9))
+
+
+### Features
+
+* Support trigger related behavior ([54743df](https://github.com/sebbo2002/ical-generator/commit/54743df1cce615f3df2c155c51928674afc2e3d7))
+
+# [4.1.0-develop.3](https://github.com/sebbo2002/ical-generator/compare/v4.1.0-develop.2...v4.1.0-develop.3) (2023-05-02)
+
+
+### Bug Fixes
+
+* Allow `null` return value for Luxon 3.3's DateTime.toJSON() ([bee19a8](https://github.com/sebbo2002/ical-generator/commit/bee19a8e70bc690b93175c2da2a35240c55032bd)), closes [#482](https://github.com/sebbo2002/ical-generator/issues/482) [#485](https://github.com/sebbo2002/ical-generator/issues/485)
+
+# [4.1.0-develop.2](https://github.com/sebbo2002/ical-generator/compare/v4.1.0-develop.1...v4.1.0-develop.2) (2023-04-29)
+
+# [4.1.0-develop.1](https://github.com/sebbo2002/ical-generator/compare/v4.0.0...v4.1.0-develop.1) (2023-04-24)
+
+
+### Bug Fixes
+
+* revent changes to package.json version ([916e460](https://github.com/sebbo2002/ical-generator/commit/916e460af591ff1ebb1c757dfc9762667331f598))
+* revert package-lock.json ([a8d8f2d](https://github.com/sebbo2002/ical-generator/commit/a8d8f2d45b039e80689e3cf9ac774645d6b3ccc9))
+
+
+### Features
+
+* Support trigger related behavior ([54743df](https://github.com/sebbo2002/ical-generator/commit/54743df1cce615f3df2c155c51928674afc2e3d7))
+
+# [4.0.0](https://github.com/sebbo2002/ical-generator/compare/v3.6.1...v4.0.0) (2023-03-30)
+
+
+### Bug Fixes
+
+* **Event:** Add `RRULE:` prefix in event.repeating() if it's not already there ([92c2034](https://github.com/sebbo2002/ical-generator/commit/92c2034cae51c0e8199b6cf1746adfe7bdc85a60)), closes [#459](https://github.com/sebbo2002/ical-generator/issues/459)
+* Update escaping for quoted values ([faf5c70](https://github.com/sebbo2002/ical-generator/commit/faf5c70771fb62284cd9db936b0f5812e8353730)), closes [#463](https://github.com/sebbo2002/ical-generator/issues/463)
+
+
+### Build System
+
+* Deprecate node.js 12 ([426588b](https://github.com/sebbo2002/ical-generator/commit/426588b4bb7bde2924bbc92006ca839e960872e1))
+* Native ESM support ([7b86a4f](https://github.com/sebbo2002/ical-generator/commit/7b86a4f1187c387a3a5792e1fb72d822b04e3631))
+
+
+### Features
+
+* ESM Module ([7e1f07a](https://github.com/sebbo2002/ical-generator/commit/7e1f07afe6ff60100df61887e6a063b382f75340))
+
+
+### BREAKING CHANGES
+
+* Importing the generator with `const ical = require('ical-generator');` (introduced with 2.1.0 / #253) will not work anymore, please use `const { default: ical } = require('ical-generator');` or move to fancy ESM imports (`import ical from 'ical-generator' ;`).
+* From now on, only node.js ^14.8.0 || >=16.0.0 are supported
+* Only Support for node.js ^12.20.0 || >=14.13.1
+
+# [4.0.0-develop.2](https://github.com/sebbo2002/ical-generator/compare/v4.0.0-develop.1...v4.0.0-develop.2) (2023-03-22)
+
+
+### Build System
+
+* Deprecate node.js 12 ([426588b](https://github.com/sebbo2002/ical-generator/commit/426588b4bb7bde2924bbc92006ca839e960872e1))
+* Native ESM support ([7b86a4f](https://github.com/sebbo2002/ical-generator/commit/7b86a4f1187c387a3a5792e1fb72d822b04e3631))
+
+
+### BREAKING CHANGES
+
+* From now on, only node.js ^14.8.0 || >=16.0.0 are supported
+* Only Support for node.js ^12.20.0 || >=14.13.1
+
+# [4.0.0-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.6.2-develop.4...v4.0.0-develop.1) (2023-03-17)
+
+
+### Features
+
+* ESM Module ([7e1f07a](https://github.com/sebbo2002/ical-generator/commit/7e1f07afe6ff60100df61887e6a063b382f75340))
+
+
+### BREAKING CHANGES
+
+* Importing the generator with `const ical = require('ical-generator');` (introduced with 2.1.0 / #253) will not work anymore, please use `const { default: ical } = require('ical-generator');` or move to fancy ESM imports (`import ical from 'ical-generator' ;`).
+
+## [3.6.2-develop.4](https://github.com/sebbo2002/ical-generator/compare/v3.6.2-develop.3...v3.6.2-develop.4) (2023-02-19)
+
+## [3.6.2-develop.3](https://github.com/sebbo2002/ical-generator/compare/v3.6.2-develop.2...v3.6.2-develop.3) (2023-02-10)
+
+
+### Bug Fixes
+
+* Update escaping for quoted values ([faf5c70](https://github.com/sebbo2002/ical-generator/commit/faf5c70771fb62284cd9db936b0f5812e8353730)), closes [#463](https://github.com/sebbo2002/ical-generator/issues/463)
+
+## [3.6.2-develop.2](https://github.com/sebbo2002/ical-generator/compare/v3.6.2-develop.1...v3.6.2-develop.2) (2023-02-05)
+
+
+### Bug Fixes
+
+* **Event:** Add `RRULE:` prefix in event.repeating() if it's not already there ([92c2034](https://github.com/sebbo2002/ical-generator/commit/92c2034cae51c0e8199b6cf1746adfe7bdc85a60)), closes [#459](https://github.com/sebbo2002/ical-generator/issues/459)
+
+## [3.6.2-develop.1](https://github.com/sebbo2002/ical-generator/compare/v3.6.1...v3.6.2-develop.1) (2023-01-03)
+
 ## [3.6.1](https://github.com/sebbo2002/ical-generator/compare/v3.6.0...v3.6.1) (2022-12-27)
 
 
