@@ -1502,6 +1502,17 @@ export default class ICalEvent {
             }
 
             g += repeating.trim() + '\r\n';
+            if(this.data.internalData && Array.isArray(this.data.internalData.repeatingExcludedDates)) {
+                //  ['2023-03-01', '2023-11-25']
+                // EXDATE;TZID=Europe/Berlin:20230301T103000,20231125T103000
+                g += 'EXDATE;TZID=' + (this.timezone() || 'Europe/Berlin') + ':' + this.data.internalData.repeatingExcludedDates.map( (it: string) => { 
+                    const excludedDate = new Date(this.data.start as Date | string);
+                    excludedDate.setFullYear(parseInt(it.split('-')[0]));
+                    excludedDate.setMonth(parseInt(it.split('-')[1]) - 1);
+                    excludedDate.setDate(parseInt(it.split('-')[2]));
+                    return formatDate(this.timezone() || 'Europe/Berlin', excludedDate, false, true); 
+                }).join(',') + '\r\n';
+            }
         }
         else if (this.data.repeating) {
             g += 'RRULE:FREQ=' + this.data.repeating.freq;
@@ -1565,9 +1576,9 @@ export default class ICalEvent {
             } else if(this.data.internalData && Array.isArray(this.data.internalData.repeatingExcludedDates)) {
                 //  ['2023-03-01', '2023-11-25']
                 // EXDATE;TZID=Europe/Berlin:20230301T103000,20231125T103000
-                g += 'EXDATE;TZID=' + this.timezone() || 'Europe/Berlin' + ':' + this.data.internalData.repeatingExcludedDates.map( it => { 
+                g += 'EXDATE;TZID=' + (this.timezone() || 'Europe/Berlin') + ':' + this.data.internalData.repeatingExcludedDates.map( (it: string) => { 
                     const excludedDate = new Date(this.data.start as Date | string);
-                    excludedDate.setFullYear(it.split('-')[0]);
+                    excludedDate.setFullYear(parseInt(it.split('-')[0]));
                     excludedDate.setMonth(parseInt(it.split('-')[1]) - 1);
                     excludedDate.setDate(parseInt(it.split('-')[2]));
                     return formatDate(this.timezone() || 'Europe/Berlin', excludedDate, false, true); 

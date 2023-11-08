@@ -1960,5 +1960,25 @@ describe('ical-generator Event', function () {
             }, cal);
             assert.ok(event.toString().includes('WKST'), 'with WKST');
         });
+
+        it('should handle internalData excludeRepeatingOptions', function () {
+            const cal = new ICalCalendar();
+            const event = new ICalEvent({
+                start: new Date('2023-11-10T21:00:00.000Z'),
+                end: new Date('2023-11-10T22:00:00.000Z'),
+                repeating: {
+                    freq: ICalEventRepeatingFreq.WEEKLY,
+                    interval: 1,
+                    startOfWeek: ICalWeekday.MO,
+                    count: 10,
+                    byDay: [ICalWeekday.FR]
+                },
+                internalData: {
+                    repeatingExcludedDates: ['2023-11-17', '2023-12-01']
+                }
+            }, cal);
+            assert.ok(event.toString().includes('EXDATE'), 'with EXDATE');
+
+        });
     });
 });
