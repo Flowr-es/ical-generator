@@ -1470,7 +1470,10 @@ export default class ICalEvent {
         if (this.data.allDay) {
             g += 'DTSTART;VALUE=DATE:' + formatDate(this.calendar.timezone(), this.data.start, true) + '\r\n';
             if (this.data.end) {
-                g += 'DTEND;VALUE=DATE:' + formatDate(this.calendar.timezone(), this.data.end, true) + '\r\n';
+                // add one day for allDay events to display them correctly on ics files
+                const allDayEnd = new Date(this.data.end as Date | string);
+                allDayEnd.setDate(allDayEnd.getDate() + 1);
+                g += 'DTEND;VALUE=DATE:' + formatDate(this.calendar.timezone(), allDayEnd, true) + '\r\n';
             }
 
             g += 'X-MICROSOFT-CDO-ALLDAYEVENT:TRUE\r\n';
@@ -1557,6 +1560,16 @@ export default class ICalEvent {
                         }).join(',') + '\r\n';
                     }
                 }
+            } else if(this.data.internalData && Array.isArray(this.data.internalData.repeatingExcludedDates)) {
+                //  ['2023-03-01', '2023-11-25']
+                // EXDATE;TZID=Europe/Berlin:20230301T103000,20231125T103000
+                g += 'EXDATE;TZID=' + this.timezone() || 'Europe/Berlin' + ':' + this.data.internalData.repeatingExcludedDates.map( it => { 
+                    const excludedDate = new Date(this.data.start as Date | string);
+                    excludedDate.setFullYear(it.split('-')[0]);
+                    excludedDate.setMonth(parseInt(it.split('-')[1]) - 1);
+                    excludedDate.setDate(parseInt(it.split('-')[2]));
+                    return formatDate(this.timezone() || 'Europe/Berlin', excludedDate, false, true); 
+                }).join(',') + '\r\n';
             }
         }
 
