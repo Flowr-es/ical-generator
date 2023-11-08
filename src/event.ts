@@ -1472,7 +1472,7 @@ export default class ICalEvent {
             if (this.data.end) {
                 // add one day for allDay events to display them correctly on ics files
                 const allDayEnd = new Date(this.data.end as Date | string);
-                if(allDayEnd.toISOString().split('T')[1] !== '00:00:00.000Z') {
+                if(allDayEnd.getHours() === 0 && allDayEnd.getMinutes() === 0 && allDayEnd.getSeconds() === 0 && allDayEnd.getMilliseconds() === 0) {
                     allDayEnd.setDate(allDayEnd.getDate() + 1);
                 }
                 g += 'DTEND;VALUE=DATE:' + formatDate(this.calendar.timezone(), allDayEnd, true) + '\r\n';
