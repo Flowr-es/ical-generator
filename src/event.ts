@@ -1,6 +1,10 @@
-'use strict';
+"use strict";
 
-import uuid from 'uuid-random';
+import uuid from "uuid-random";
+import ICalAlarm, { type ICalAlarmData } from "./alarm.ts";
+import ICalAttendee, { type ICalAttendeeData } from "./attendee.ts";
+import ICalCalendar from "./calendar.ts";
+import ICalCategory, { type ICalCategoryData } from "./category.ts";
 import {
     addOrGetCustomAttributes,
     checkDate,
@@ -12,12 +16,8 @@ import {
     generateCustomAttributes,
     isRRule,
     toDate,
-    toJSON
-} from './tools.ts';
-import ICalAttendee, { type ICalAttendeeData } from './attendee.ts';
-import ICalAlarm, { type ICalAlarmData } from './alarm.ts';
-import ICalCategory, { type ICalCategoryData } from './category.ts';
-import ICalCalendar from './calendar.ts';
+    toJSON,
+} from "./tools.ts";
 import {
     ICalEventRepeatingFreq,
     ICalWeekday,
@@ -26,121 +26,129 @@ import {
     type ICalLocation,
     type ICalOrganizer,
     type ICalRRuleStub,
-    type ICalRepeatingOptions
-} from './types.ts';
-
+    type ICalRepeatingOptions,
+} from "./types.ts";
 
 export enum ICalEventStatus {
-    CONFIRMED = 'CONFIRMED',
-    TENTATIVE = 'TENTATIVE',
-    CANCELLED = 'CANCELLED'
+    CONFIRMED = "CONFIRMED",
+    TENTATIVE = "TENTATIVE",
+    CANCELLED = "CANCELLED",
 }
 
 export enum ICalEventBusyStatus {
-    FREE = 'FREE',
-    TENTATIVE = 'TENTATIVE',
-    BUSY = 'BUSY',
-    OOF = 'OOF'
+    FREE = "FREE",
+    TENTATIVE = "TENTATIVE",
+    BUSY = "BUSY",
+    OOF = "OOF",
 }
 
 export enum ICalEventTransparency {
-    TRANSPARENT = 'TRANSPARENT',
-    OPAQUE = 'OPAQUE'
+    TRANSPARENT = "TRANSPARENT",
+    OPAQUE = "OPAQUE",
 }
 
 export enum ICalEventClass {
-    PUBLIC = 'PUBLIC',
-    PRIVATE = 'PRIVATE',
-    CONFIDENTIAL = 'CONFIDENTIAL'
+    PUBLIC = "PUBLIC",
+    PRIVATE = "PRIVATE",
+    CONFIDENTIAL = "CONFIDENTIAL",
 }
 
 export interface ICalEventData {
-    id?: string | number | null,
-    sequence?: number,
-    start: ICalDateTimeValue,
-    end?: ICalDateTimeValue | null,
-    recurrenceId?: ICalDateTimeValue | null,
-    timezone?: string | null,
-    stamp?: ICalDateTimeValue,
-    allDay?: boolean,
-    floating?: boolean,
-    repeating?: ICalRepeatingOptions | ICalRRuleStub | string | null,
-    summary?: string,
-    location?: ICalLocation | string | null,
-    description?: ICalDescription | string | null,
-    organizer?: ICalOrganizer | string | null,
-    attendees?: ICalAttendee[] | ICalAttendeeData[],
-    alarms?: ICalAlarm[] | ICalAlarmData[],
-    categories?: ICalCategory[] | ICalCategoryData[],
-    status?: ICalEventStatus | null,
-    busystatus?: ICalEventBusyStatus | null,
-    priority?: number | null,
-    url?: string | null,
-    attachments?: string[],
-    transparency?: ICalEventTransparency | null,
-    created?: ICalDateTimeValue | null,
-    lastModified?: ICalDateTimeValue | null,
+    id?: string | number | null;
+    sequence?: number;
+    start: ICalDateTimeValue;
+    end?: ICalDateTimeValue | null;
+    recurrenceId?: ICalDateTimeValue | null;
+    timezone?: string | null;
+    stamp?: ICalDateTimeValue;
+    allDay?: boolean;
+    floating?: boolean;
+    repeating?: ICalRepeatingOptions | ICalRRuleStub | string | null;
+    summary?: string;
+    location?: ICalLocation | string | null;
+    description?: ICalDescription | string | null;
+    organizer?: ICalOrganizer | string | null;
+    attendees?: ICalAttendee[] | ICalAttendeeData[];
+    alarms?: ICalAlarm[] | ICalAlarmData[];
+    categories?: ICalCategory[] | ICalCategoryData[];
+    status?: ICalEventStatus | null;
+    busystatus?: ICalEventBusyStatus | null;
+    priority?: number | null;
+    url?: string | null;
+    attachments?: string[];
+    transparency?: ICalEventTransparency | null;
+    created?: ICalDateTimeValue | null;
+    lastModified?: ICalDateTimeValue | null;
     class?: ICalEventClass | null;
-    x?: {key: string, value: string}[] | [string, string][] | Record<string, string>;
+    x?:
+        | { key: string; value: string }[]
+        | [string, string][]
+        | Record<string, string>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    internalData?: any;
 }
 
 interface ICalEventInternalData {
-    id: string,
-    sequence: number,
-    start: ICalDateTimeValue,
-    end: ICalDateTimeValue | null,
-    recurrenceId: ICalDateTimeValue | null,
-    timezone: string | null,
-    stamp: ICalDateTimeValue,
-    allDay: boolean,
-    floating: boolean,
-    repeating: ICalEventJSONRepeatingData | ICalRRuleStub | string | null,
-    summary: string,
-    location: ICalLocation | null,
-    description: ICalDescription | null,
-    organizer: ICalOrganizer | null,
-    attendees: ICalAttendee[],
-    alarms: ICalAlarm[],
-    categories: ICalCategory[],
-    status: ICalEventStatus | null,
-    busystatus: ICalEventBusyStatus | null,
-    priority: number | null,
-    url: string | null,
-    attachments: string[],
-    transparency: ICalEventTransparency | null,
-    created: ICalDateTimeValue | null,
-    lastModified: ICalDateTimeValue | null,
-    class: ICalEventClass | null,
+    id: string;
+    sequence: number;
+    start: ICalDateTimeValue;
+    end: ICalDateTimeValue | null;
+    recurrenceId: ICalDateTimeValue | null;
+    timezone: string | null;
+    stamp: ICalDateTimeValue;
+    allDay: boolean;
+    floating: boolean;
+    repeating: ICalEventJSONRepeatingData | ICalRRuleStub | string | null;
+    summary: string;
+    location: ICalLocation | null;
+    description: ICalDescription | null;
+    organizer: ICalOrganizer | null;
+    attendees: ICalAttendee[];
+    alarms: ICalAlarm[];
+    categories: ICalCategory[];
+    status: ICalEventStatus | null;
+    busystatus: ICalEventBusyStatus | null;
+    priority: number | null;
+    url: string | null;
+    attachments: string[];
+    transparency: ICalEventTransparency | null;
+    created: ICalDateTimeValue | null;
+    lastModified: ICalDateTimeValue | null;
+    class: ICalEventClass | null;
     x: [string, string][];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    internalData?: any;
 }
 
 export interface ICalEventJSONData {
-    id: string,
-    sequence: number,
-    start: string,
-    end: string | null,
-    recurrenceId: string | null,
-    timezone: string | null,
-    stamp: string,
-    allDay: boolean,
-    floating: boolean,
-    repeating: ICalEventJSONRepeatingData | string | null,
-    summary: string,
-    location: ICalLocation | null,
-    description: ICalDescription | null,
-    organizer: ICalOrganizer | null,
-    attendees: ICalAttendee[],
-    alarms: ICalAlarm[],
-    categories: ICalCategory[],
-    status: ICalEventStatus | null,
-    busystatus: ICalEventBusyStatus | null,
-    priority?: number | null,
-    url: string | null,
-    attachments: string[],
-    transparency: ICalEventTransparency | null,
-    created: string | null,
-    lastModified: string | null,
-    x: {key: string, value: string}[];
+    id: string;
+    sequence: number;
+    start: string;
+    end: string | null;
+    recurrenceId: string | null;
+    timezone: string | null;
+    stamp: string;
+    allDay: boolean;
+    floating: boolean;
+    repeating: ICalEventJSONRepeatingData | string | null;
+    summary: string;
+    location: ICalLocation | null;
+    description: ICalDescription | null;
+    organizer: ICalOrganizer | null;
+    attendees: ICalAttendee[];
+    alarms: ICalAlarm[];
+    categories: ICalCategory[];
+    status: ICalEventStatus | null;
+    busystatus: ICalEventBusyStatus | null;
+    priority?: number | null;
+    url: string | null;
+    attachments: string[];
+    transparency: ICalEventTransparency | null;
+    created: string | null;
+    lastModified: string | null;
+    x: { key: string; value: string }[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    internalData?: any;
 }
 
 export interface ICalEventJSONRepeatingData {
@@ -155,7 +163,6 @@ export interface ICalEventJSONRepeatingData {
     exclude?: ICalDateTimeValue[];
     startOfWeek?: ICalWeekday;
 }
-
 
 /**
  * Usually you get an {@link ICalEvent} object like this:
@@ -188,7 +195,7 @@ export default class ICalEvent {
             allDay: false,
             floating: false,
             repeating: null,
-            summary: '',
+            summary: "",
             location: null,
             description: null,
             organizer: null,
@@ -204,19 +211,21 @@ export default class ICalEvent {
             created: null,
             lastModified: null,
             class: null,
-            x: []
+            x: [],
+            internalData: null,
         };
 
         this.calendar = calendar;
         if (!calendar) {
-            throw new Error('`calendar` option required!');
+            throw new Error("`calendar` option required!");
         }
 
         if (data.id) this.id(data.id);
         if (data.sequence !== undefined) this.sequence(data.sequence);
         if (data.start) this.start(data.start);
         if (data.end !== undefined) this.end(data.end);
-        if (data.recurrenceId !== undefined) this.recurrenceId(data.recurrenceId);
+        if (data.recurrenceId !== undefined)
+            this.recurrenceId(data.recurrenceId);
         if (data.timezone !== undefined) this.timezone(data.timezone);
         if (data.stamp !== undefined) this.stamp(data.stamp);
         if (data.allDay !== undefined) this.allDay(data.allDay);
@@ -234,11 +243,15 @@ export default class ICalEvent {
         if (data.priority !== undefined) this.priority(data.priority);
         if (data.url !== undefined) this.url(data.url);
         if (data.attachments !== undefined) this.attachments(data.attachments);
-        if (data.transparency !== undefined) this.transparency(data.transparency);
+        if (data.transparency !== undefined)
+            this.transparency(data.transparency);
         if (data.created !== undefined) this.created(data.created);
-        if (data.lastModified !== undefined) this.lastModified(data.lastModified);
+        if (data.lastModified !== undefined)
+            this.lastModified(data.lastModified);
         if (data.class !== undefined) this.class(data.class);
         if (data.x !== undefined) this.x(data.x);
+        if (data.internalData !== undefined)
+            this.data.internalData = data.internalData;
     }
 
     /**
@@ -304,7 +317,7 @@ export default class ICalEvent {
 
         const s = parseInt(String(sequence), 10);
         if (isNaN(s)) {
-            throw new Error('`sequence` must be a number!');
+            throw new Error("`sequence` must be a number!");
         }
 
         this.data.sequence = sequence;
@@ -363,7 +376,7 @@ export default class ICalEvent {
             return this.data.start;
         }
 
-        this.data.start = checkDate(start, 'start');
+        this.data.start = checkDate(start, "start");
         return this;
     }
 
@@ -393,7 +406,7 @@ export default class ICalEvent {
             return this;
         }
 
-        this.data.end = checkDate(end, 'end');
+        this.data.end = checkDate(end, "end");
         return this;
     }
 
@@ -402,7 +415,11 @@ export default class ICalEvent {
      * @private
      */
     private swapStartAndEndIfRequired(): void {
-        if (this.data.start && this.data.end && toDate(this.data.start).getTime() > toDate(this.data.end).getTime()) {
+        if (
+            this.data.start &&
+            this.data.end &&
+            toDate(this.data.start).getTime() > toDate(this.data.end).getTime()
+        ) {
             const t = this.data.start;
             this.data.start = this.data.end;
             this.data.end = t;
@@ -423,7 +440,9 @@ export default class ICalEvent {
      * @since 0.2.0
      */
     recurrenceId(recurrenceId: ICalDateTimeValue | null): this;
-    recurrenceId(recurrenceId?: ICalDateTimeValue | null): this | ICalDateTimeValue | null {
+    recurrenceId(
+        recurrenceId?: ICalDateTimeValue | null
+    ): this | ICalDateTimeValue | null {
         if (recurrenceId === undefined) {
             return this.data.recurrenceId;
         }
@@ -432,7 +451,7 @@ export default class ICalEvent {
             return this;
         }
 
-        this.data.recurrenceId = checkDate(recurrenceId, 'recurrenceId');
+        this.data.recurrenceId = checkDate(recurrenceId, "recurrenceId");
         return this;
     }
 
@@ -475,7 +494,8 @@ export default class ICalEvent {
             return this.calendar.timezone();
         }
 
-        this.data.timezone = timezone && timezone !== 'UTC' ? timezone.toString() : null;
+        this.data.timezone =
+            timezone && timezone !== "UTC" ? timezone.toString() : null;
         if (this.data.timezone) {
             this.data.floating = false;
         }
@@ -504,7 +524,7 @@ export default class ICalEvent {
             return this.data.stamp;
         }
 
-        this.data.stamp = checkDate(stamp, 'stamp');
+        this.data.stamp = checkDate(stamp, "stamp");
         return this;
     }
 
@@ -758,8 +778,12 @@ export default class ICalEvent {
     /**
      * @internal
      */
-    repeating(repeating: ICalRepeatingOptions | ICalRRuleStub | string | null): this;
-    repeating(repeating?: ICalRepeatingOptions | ICalRRuleStub | string | null): this | ICalEventJSONRepeatingData | ICalRRuleStub | string | null {
+    repeating(
+        repeating: ICalRepeatingOptions | ICalRRuleStub | string | null
+    ): this;
+    repeating(
+        repeating?: ICalRepeatingOptions | ICalRRuleStub | string | null
+    ): this | ICalEventJSONRepeatingData | ICalRRuleStub | string | null {
         if (repeating === undefined) {
             return this.data.repeating;
         }
@@ -767,18 +791,21 @@ export default class ICalEvent {
             this.data.repeating = null;
             return this;
         }
-        if(isRRule(repeating) || typeof repeating === 'string') {
+        if (isRRule(repeating) || typeof repeating === "string") {
             this.data.repeating = repeating;
             return this;
         }
 
         this.data.repeating = {
-            freq: checkEnum(ICalEventRepeatingFreq, repeating.freq) as ICalEventRepeatingFreq
+            freq: checkEnum(
+                ICalEventRepeatingFreq,
+                repeating.freq
+            ) as ICalEventRepeatingFreq,
         };
 
         if (repeating.count) {
             if (!isFinite(repeating.count)) {
-                throw new Error('`repeating.count` must be a finite number!');
+                throw new Error("`repeating.count` must be a finite number!");
             }
 
             this.data.repeating.count = repeating.count;
@@ -786,26 +813,41 @@ export default class ICalEvent {
 
         if (repeating.interval) {
             if (!isFinite(repeating.interval)) {
-                throw new Error('`repeating.interval` must be a finite number!');
+                throw new Error(
+                    "`repeating.interval` must be a finite number!"
+                );
             }
 
             this.data.repeating.interval = repeating.interval;
         }
 
         if (repeating.until !== undefined) {
-            this.data.repeating.until = checkDate(repeating.until, 'repeating.until');
+            this.data.repeating.until = checkDate(
+                repeating.until,
+                "repeating.until"
+            );
         }
 
         if (repeating.byDay) {
-            const byDayArray = Array.isArray(repeating.byDay) ? repeating.byDay : [repeating.byDay];
-            this.data.repeating.byDay = byDayArray.map(day => checkEnum(ICalWeekday, day) as ICalWeekday);
+            const byDayArray = Array.isArray(repeating.byDay)
+                ? repeating.byDay
+                : [repeating.byDay];
+            this.data.repeating.byDay = byDayArray.map(
+                (day) => checkEnum(ICalWeekday, day) as ICalWeekday
+            );
         }
 
         if (repeating.byMonth) {
-            const byMonthArray = Array.isArray(repeating.byMonth) ? repeating.byMonth : [repeating.byMonth];
-            this.data.repeating.byMonth = byMonthArray.map(month => {
-                if (typeof month !== 'number' || month < 1 || month > 12) {
-                    throw new Error('`repeating.byMonth` contains invalid value `' + month + '`!');
+            const byMonthArray = Array.isArray(repeating.byMonth)
+                ? repeating.byMonth
+                : [repeating.byMonth];
+            this.data.repeating.byMonth = byMonthArray.map((month) => {
+                if (typeof month !== "number" || month < 1 || month > 12) {
+                    throw new Error(
+                        "`repeating.byMonth` contains invalid value `" +
+                            month +
+                            "`!"
+                    );
                 }
 
                 return month;
@@ -813,12 +855,22 @@ export default class ICalEvent {
         }
 
         if (repeating.byMonthDay) {
-            const byMonthDayArray = Array.isArray(repeating.byMonthDay) ? repeating.byMonthDay : [repeating.byMonthDay];
+            const byMonthDayArray = Array.isArray(repeating.byMonthDay)
+                ? repeating.byMonthDay
+                : [repeating.byMonthDay];
 
-
-            this.data.repeating.byMonthDay = byMonthDayArray.map(monthDay => {
-                if (typeof monthDay !== 'number' || monthDay < -31 || monthDay > 31 || monthDay === 0) {
-                    throw new Error('`repeating.byMonthDay` contains invalid value `' + monthDay + '`!');
+            this.data.repeating.byMonthDay = byMonthDayArray.map((monthDay) => {
+                if (
+                    typeof monthDay !== "number" ||
+                    monthDay < -31 ||
+                    monthDay > 31 ||
+                    monthDay === 0
+                ) {
+                    throw new Error(
+                        "`repeating.byMonthDay` contains invalid value `" +
+                            monthDay +
+                            "`!"
+                    );
                 }
 
                 return monthDay;
@@ -827,26 +879,42 @@ export default class ICalEvent {
 
         if (repeating.bySetPos) {
             if (!this.data.repeating.byDay) {
-                throw '`repeating.bySetPos` must be used along with `repeating.byDay`!';
+                throw "`repeating.bySetPos` must be used along with `repeating.byDay`!";
             }
-            const bySetPosArray = Array.isArray(repeating.bySetPos) ? repeating.bySetPos : [repeating.bySetPos];
-            this.data.repeating.bySetPos = bySetPosArray.map(bySetPos => {
-                if (typeof bySetPos !== 'number' || bySetPos < -366 || bySetPos > 366 || bySetPos === 0) {
-                    throw '`repeating.bySetPos` contains invalid value `' + bySetPos + '`!';
+            const bySetPosArray = Array.isArray(repeating.bySetPos)
+                ? repeating.bySetPos
+                : [repeating.bySetPos];
+            this.data.repeating.bySetPos = bySetPosArray.map((bySetPos) => {
+                if (
+                    typeof bySetPos !== "number" ||
+                    bySetPos < -366 ||
+                    bySetPos > 366 ||
+                    bySetPos === 0
+                ) {
+                    throw (
+                        "`repeating.bySetPos` contains invalid value `" +
+                        bySetPos +
+                        "`!"
+                    );
                 }
                 return bySetPos;
             });
         }
 
         if (repeating.exclude) {
-            const excludeArray = Array.isArray(repeating.exclude) ? repeating.exclude : [repeating.exclude];
+            const excludeArray = Array.isArray(repeating.exclude)
+                ? repeating.exclude
+                : [repeating.exclude];
             this.data.repeating.exclude = excludeArray.map((exclude, i) => {
                 return checkDate(exclude, `repeating.exclude[${i}]`);
             });
         }
 
         if (repeating.startOfWeek) {
-            this.data.repeating.startOfWeek = checkEnum(ICalWeekday, repeating.startOfWeek) as ICalWeekday;
+            this.data.repeating.startOfWeek = checkEnum(
+                ICalWeekday,
+                repeating.startOfWeek
+            ) as ICalWeekday;
         }
 
         return this;
@@ -870,10 +938,9 @@ export default class ICalEvent {
             return this.data.summary;
         }
 
-        this.data.summary = summary ? String(summary) : '';
+        this.data.summary = summary ? String(summary) : "";
         return this;
     }
-
 
     /**
      * Get the event's location
@@ -926,31 +993,37 @@ export default class ICalEvent {
      * @since 0.2.0
      */
     location(location: ICalLocation | string | null): this;
-    location(location?: ICalLocation | string | null): this | ICalLocation | null {
+    location(
+        location?: ICalLocation | string | null
+    ): this | ICalLocation | null {
         if (location === undefined) {
             return this.data.location;
         }
-        if (typeof location === 'string') {
+        if (typeof location === "string") {
             this.data.location = {
-                title: location
+                title: location,
             };
             return this;
         }
-        if (location && (
-            ('title' in location && !location.title) ||
-            (location?.geo && (typeof location.geo.lat !== 'number' || !isFinite(location.geo.lat) || typeof location.geo.lon !== 'number' || !isFinite(location.geo.lon))) ||
-            (!('title' in location) && !location?.geo)
-        )) {
+        if (
+            location &&
+            (("title" in location && !location.title) ||
+                (location?.geo &&
+                    (typeof location.geo.lat !== "number" ||
+                        !isFinite(location.geo.lat) ||
+                        typeof location.geo.lon !== "number" ||
+                        !isFinite(location.geo.lon))) ||
+                (!("title" in location) && !location?.geo))
+        ) {
             throw new Error(
-                '`location` isn\'t formatted correctly. See https://sebbo2002.github.io/ical-generator/'+
-                'develop/reference/classes/ICalEvent.html#location'
+                "`location` isn't formatted correctly. See https://sebbo2002.github.io/ical-generator/" +
+                    "develop/reference/classes/ICalEvent.html#location"
             );
         }
 
         this.data.location = location || null;
         return this;
     }
-
 
     /**
      * Get the event's description as an {@link ICalDescription} object.
@@ -979,7 +1052,9 @@ export default class ICalEvent {
      * @since 0.2.0
      */
     description(description: ICalDescription | string | null): this;
-    description(description?: ICalDescription | string | null): this | ICalDescription | null {
+    description(
+        description?: ICalDescription | string | null
+    ): this | ICalDescription | null {
         if (description === undefined) {
             return this.data.description;
         }
@@ -988,15 +1063,13 @@ export default class ICalEvent {
             return this;
         }
 
-        if (typeof description === 'string') {
-            this.data.description = {plain: description};
-        }
-        else {
+        if (typeof description === "string") {
+            this.data.description = { plain: description };
+        } else {
             this.data.description = description;
         }
         return this;
     }
-
 
     /**
      * Get the event's organizer
@@ -1032,7 +1105,9 @@ export default class ICalEvent {
      * @since 0.2.0
      */
     organizer(organizer: ICalOrganizer | string | null): this;
-    organizer(organizer?: ICalOrganizer | string | null): this | ICalOrganizer | null {
+    organizer(
+        organizer?: ICalOrganizer | string | null
+    ): this | ICalOrganizer | null {
         if (organizer === undefined) {
             return this.data.organizer;
         }
@@ -1041,10 +1116,9 @@ export default class ICalEvent {
             return this;
         }
 
-        this.data.organizer = checkNameAndMail('organizer', organizer);
+        this.data.organizer = checkNameAndMail("organizer", organizer);
         return this;
     }
-
 
     /**
      * Creates a new {@link ICalAttendee} and returns it. Use options to prefill
@@ -1092,20 +1166,21 @@ export default class ICalEvent {
      *
      * @since 0.2.0
      */
-    createAttendee(data: ICalAttendee | ICalAttendeeData | string): ICalAttendee {
+    createAttendee(
+        data: ICalAttendee | ICalAttendeeData | string
+    ): ICalAttendee {
         if (data instanceof ICalAttendee) {
             this.data.attendees.push(data);
             return data;
         }
-        if (typeof data === 'string') {
-            data = { email: data, ...checkNameAndMail('data', data) };
+        if (typeof data === "string") {
+            data = { email: data, ...checkNameAndMail("data", data) };
         }
 
         const attendee = new ICalAttendee(data, this);
         this.data.attendees.push(attendee);
         return attendee;
     }
-
 
     /**
      * Get all attendees
@@ -1130,15 +1205,16 @@ export default class ICalEvent {
      * @since 0.2.0
      */
     attendees(attendees: (ICalAttendee | ICalAttendeeData | string)[]): this;
-    attendees(attendees?: (ICalAttendee | ICalAttendeeData | string)[]): this | ICalAttendee[] {
+    attendees(
+        attendees?: (ICalAttendee | ICalAttendeeData | string)[]
+    ): this | ICalAttendee[] {
         if (!attendees) {
             return this.data.attendees;
         }
 
-        attendees.forEach(attendee => this.createAttendee(attendee));
+        attendees.forEach((attendee) => this.createAttendee(attendee));
         return this;
     }
-
 
     /**
      * Creates a new {@link ICalAlarm} and returns it. Use options to prefill
@@ -1160,11 +1236,11 @@ export default class ICalEvent {
      * @since 0.2.1
      */
     createAlarm(data: ICalAlarm | ICalAlarmData): ICalAlarm {
-        const alarm = data instanceof ICalAlarm ? data : new ICalAlarm(data, this);
+        const alarm =
+            data instanceof ICalAlarm ? data : new ICalAlarm(data, this);
         this.data.alarms.push(alarm);
         return alarm;
     }
-
 
     /**
      * Get all alarms
@@ -1194,10 +1270,11 @@ export default class ICalEvent {
             return this.data.alarms;
         }
 
-        alarms.forEach((alarm: ICalAlarm | ICalAlarmData) => this.createAlarm(alarm));
+        alarms.forEach((alarm: ICalAlarm | ICalAlarmData) =>
+            this.createAlarm(alarm)
+        );
         return this;
     }
-
 
     /**
      * Creates a new {@link ICalCategory} and returns it. Use options to prefill the category's attributes.
@@ -1217,11 +1294,11 @@ export default class ICalEvent {
      * @since 0.3.0
      */
     createCategory(data: ICalCategory | ICalCategoryData): ICalCategory {
-        const category = data instanceof ICalCategory ? data : new ICalCategory(data);
+        const category =
+            data instanceof ICalCategory ? data : new ICalCategory(data);
         this.data.categories.push(category);
         return category;
     }
-
 
     /**
      * Get all categories
@@ -1246,15 +1323,16 @@ export default class ICalEvent {
      * @since 0.3.0
      */
     categories(categories: (ICalCategory | ICalCategoryData)[]): this;
-    categories(categories?: (ICalCategory | ICalCategoryData)[]): this | ICalCategory[] {
+    categories(
+        categories?: (ICalCategory | ICalCategoryData)[]
+    ): this | ICalCategory[] {
         if (!categories) {
             return this.data.categories;
         }
 
-        categories.forEach(category => this.createCategory(category));
+        categories.forEach((category) => this.createCategory(category));
         return this;
     }
-
 
     /**
      * Get the event's status
@@ -1282,10 +1360,12 @@ export default class ICalEvent {
             return this;
         }
 
-        this.data.status = checkEnum(ICalEventStatus, status) as ICalEventStatus;
+        this.data.status = checkEnum(
+            ICalEventStatus,
+            status
+        ) as ICalEventStatus;
         return this;
     }
-
 
     /**
      * Get the event's busy status
@@ -1306,7 +1386,9 @@ export default class ICalEvent {
      * @since 1.0.2
      */
     busystatus(busystatus: ICalEventBusyStatus | null): this;
-    busystatus(busystatus?: ICalEventBusyStatus | null): this | ICalEventBusyStatus | null {
+    busystatus(
+        busystatus?: ICalEventBusyStatus | null
+    ): this | ICalEventBusyStatus | null {
         if (busystatus === undefined) {
             return this.data.busystatus;
         }
@@ -1315,10 +1397,12 @@ export default class ICalEvent {
             return this;
         }
 
-        this.data.busystatus = checkEnum(ICalEventBusyStatus, busystatus) as ICalEventBusyStatus;
+        this.data.busystatus = checkEnum(
+            ICalEventBusyStatus,
+            busystatus
+        ) as ICalEventBusyStatus;
         return this;
     }
-
 
     /**
      * Get the event's priority. A value of 1 represents
@@ -1346,14 +1430,15 @@ export default class ICalEvent {
             return this;
         }
 
-        if(priority < 0 || priority > 9) {
-            throw new Error('`priority` is invalid, musst be 0 ≤ priority ≤ 9.');
+        if (priority < 0 || priority > 9) {
+            throw new Error(
+                "`priority` is invalid, musst be 0 ≤ priority ≤ 9."
+            );
         }
 
         this.data.priority = Math.round(priority);
         return this;
     }
-
 
     /**
      * Get the event's URL
@@ -1395,7 +1480,6 @@ export default class ICalEvent {
         return this;
     }
 
-
     /**
      * Get all attachment urls
      * @since 3.2.0-develop.1
@@ -1424,7 +1508,9 @@ export default class ICalEvent {
             return this.data.attachments;
         }
 
-        attachments.forEach((attachment: string) => this.createAttachment(attachment));
+        attachments.forEach((attachment: string) =>
+            this.createAttachment(attachment)
+        );
         return this;
     }
 
@@ -1451,7 +1537,9 @@ export default class ICalEvent {
      * @since 1.7.3
      */
     transparency(transparency: ICalEventTransparency | null): this;
-    transparency(transparency?: ICalEventTransparency | null): this | ICalEventTransparency | null {
+    transparency(
+        transparency?: ICalEventTransparency | null
+    ): this | ICalEventTransparency | null {
         if (transparency === undefined) {
             return this.data.transparency;
         }
@@ -1460,10 +1548,12 @@ export default class ICalEvent {
             return this;
         }
 
-        this.data.transparency = checkEnum(ICalEventTransparency, transparency) as ICalEventTransparency;
+        this.data.transparency = checkEnum(
+            ICalEventTransparency,
+            transparency
+        ) as ICalEventTransparency;
         return this;
     }
-
 
     /**
      * Get the event's creation date
@@ -1476,7 +1566,9 @@ export default class ICalEvent {
      * @since 0.3.0
      */
     created(created: ICalDateTimeValue | null): this;
-    created(created?: ICalDateTimeValue | null): this | ICalDateTimeValue | null {
+    created(
+        created?: ICalDateTimeValue | null
+    ): this | ICalDateTimeValue | null {
         if (created === undefined) {
             return this.data.created;
         }
@@ -1485,10 +1577,9 @@ export default class ICalEvent {
             return this;
         }
 
-        this.data.created = checkDate(created, 'created');
+        this.data.created = checkDate(created, "created");
         return this;
     }
-
 
     /**
      * Get the event's last modification date
@@ -1501,7 +1592,9 @@ export default class ICalEvent {
      * @since 0.3.0
      */
     lastModified(lastModified: ICalDateTimeValue | null): this;
-    lastModified(lastModified?: ICalDateTimeValue | null): this | ICalDateTimeValue | null {
+    lastModified(
+        lastModified?: ICalDateTimeValue | null
+    ): this | ICalDateTimeValue | null {
         if (lastModified === undefined) {
             return this.data.lastModified;
         }
@@ -1510,7 +1603,7 @@ export default class ICalEvent {
             return this;
         }
 
-        this.data.lastModified = checkDate(lastModified, 'lastModified');
+        this.data.lastModified = checkDate(lastModified, "lastModified");
         return this;
     }
 
@@ -1544,7 +1637,6 @@ export default class ICalEvent {
         return this;
     }
 
-
     /**
      * Set X-* attributes. Woun't filter double attributes,
      * which are also added by another method (e.g. summary),
@@ -1569,7 +1661,12 @@ export default class ICalEvent {
      *
      * @since 1.9.0
      */
-    x (keyOrArray: {key: string, value: string}[] | [string, string][] | Record<string, string>): this;
+    x(
+        keyOrArray:
+            | { key: string; value: string }[]
+            | [string, string][]
+            | Record<string, string>
+    ): this;
 
     /**
      * Set a X-* attribute. Woun't filter double attributes,
@@ -1582,28 +1679,34 @@ export default class ICalEvent {
      *
      * @since 1.9.0
      */
-    x (keyOrArray: string, value: string): this;
+    x(keyOrArray: string, value: string): this;
 
     /**
      * Get all custom X-* attributes.
      * @since 1.9.0
      */
-    x (): {key: string, value: string}[];
-    x(keyOrArray?: ({ key: string, value: string })[] | [string, string][] | Record<string, string> | string, value?: string): this | void | ({ key: string, value: string })[] {
+    x(): { key: string; value: string }[];
+    x(
+        keyOrArray?:
+            | { key: string; value: string }[]
+            | [string, string][]
+            | Record<string, string>
+            | string,
+        value?: string
+    ): this | void | { key: string; value: string }[] {
         if (keyOrArray === undefined) {
             return addOrGetCustomAttributes(this.data);
         }
 
-        if (typeof keyOrArray === 'string' && typeof value === 'string') {
+        if (typeof keyOrArray === "string" && typeof value === "string") {
             addOrGetCustomAttributes(this.data, keyOrArray, value);
         }
-        if (typeof keyOrArray === 'object') {
+        if (typeof keyOrArray === "object") {
             addOrGetCustomAttributes(this.data, keyOrArray);
         }
 
         return this;
     }
-
 
     /**
      * Return a shallow copy of the events's options for JSON stringification.
@@ -1622,13 +1725,15 @@ export default class ICalEvent {
      */
     toJSON(): ICalEventJSONData {
         let repeating: ICalEventJSONRepeatingData | string | null = null;
-        if(isRRule(this.data.repeating) || typeof this.data.repeating === 'string') {
+        if (
+            isRRule(this.data.repeating) ||
+            typeof this.data.repeating === "string"
+        ) {
             repeating = this.data.repeating.toString();
-        }
-        else if(this.data.repeating) {
+        } else if (this.data.repeating) {
             repeating = Object.assign({}, this.data.repeating, {
                 until: toJSON(this.data.repeating.until) || undefined,
-                exclude: this.data.repeating.exclude?.map(d => toJSON(d)),
+                exclude: this.data.repeating.exclude?.map((d) => toJSON(d)),
             });
         }
 
@@ -1641,10 +1746,9 @@ export default class ICalEvent {
             created: toJSON(this.data.created) || null,
             lastModified: toJSON(this.data.lastModified) || null,
             repeating,
-            x: this.x()
+            x: this.x(),
         });
     }
-
 
     /**
      * Return generated event as a string.
@@ -1655,174 +1759,358 @@ export default class ICalEvent {
      * ```
      */
     toString(): string {
-        let g = '';
+        let g = "";
 
         // DATE & TIME
-        g += 'BEGIN:VEVENT\r\n';
-        g += 'UID:' + this.data.id + '\r\n';
+        g += "BEGIN:VEVENT\r\n";
+        g += "UID:" + this.data.id + "\r\n";
 
         // SEQUENCE
-        g += 'SEQUENCE:' + this.data.sequence + '\r\n';
+        g += "SEQUENCE:" + this.data.sequence + "\r\n";
 
         this.swapStartAndEndIfRequired();
-        g += 'DTSTAMP:' + formatDate(this.calendar.timezone(), this.data.stamp) + '\r\n';
+        g +=
+            "DTSTAMP:" +
+            formatDate(this.calendar.timezone(), this.data.stamp) +
+            "\r\n";
         if (this.data.allDay) {
-            g += 'DTSTART;VALUE=DATE:' + formatDate(this.timezone(), this.data.start, true) + '\r\n';
+            g +=
+                "DTSTART;VALUE=DATE:" +
+                formatDate(this.timezone(), this.data.start, true) +
+                "\r\n";
             if (this.data.end) {
-                g += 'DTEND;VALUE=DATE:' + formatDate(this.timezone(), this.data.end, true) + '\r\n';
+                // orignal
+                // g += 'DTEND;VALUE=DATE:' + formatDate(this.timezone(), this.data.end, true) + '\r\n';
+
+                // add one day for allDay events to display them correctly on ics files
+                const allDayEnd = new Date(this.data.end as Date | string);
+                if (
+                    !(
+                        allDayEnd.getHours() === 0 &&
+                        allDayEnd.getMinutes() === 0 &&
+                        allDayEnd.getSeconds() === 0 &&
+                        allDayEnd.getMilliseconds() === 0
+                    )
+                ) {
+                    allDayEnd.setDate(allDayEnd.getDate() + 1);
+                }
+                g +=
+                    "DTEND;VALUE=DATE:" +
+                    formatDate(this.calendar.timezone(), allDayEnd, true) +
+                    "\r\n";
             }
 
-            g += 'X-MICROSOFT-CDO-ALLDAYEVENT:TRUE\r\n';
-            g += 'X-MICROSOFT-MSNCALENDAR-ALLDAYEVENT:TRUE\r\n';
-        }
-        else {
-            g += formatDateTZ(this.timezone(), 'DTSTART', this.data.start, this.data) + '\r\n';
+            g += "X-MICROSOFT-CDO-ALLDAYEVENT:TRUE\r\n";
+            g += "X-MICROSOFT-MSNCALENDAR-ALLDAYEVENT:TRUE\r\n";
+        } else {
+            g +=
+                formatDateTZ(
+                    this.timezone(),
+                    "DTSTART",
+                    this.data.start,
+                    this.data
+                ) + "\r\n";
             if (this.data.end) {
-                g += formatDateTZ(this.timezone(), 'DTEND', this.data.end, this.data) + '\r\n';
+                g +=
+                    formatDateTZ(
+                        this.timezone(),
+                        "DTEND",
+                        this.data.end,
+                        this.data
+                    ) + "\r\n";
             }
         }
 
         // REPEATING
-        if(isRRule(this.data.repeating) || typeof this.data.repeating === 'string') {
+        if (
+            isRRule(this.data.repeating) ||
+            typeof this.data.repeating === "string"
+        ) {
             let repeating = this.data.repeating
                 .toString()
-                .replace(/\r\n/g, '\n')
-                .split('\n')
-                .filter(l => l && !l.startsWith('DTSTART:'))
-                .join('\r\n');
+                .replace(/\r\n/g, "\n")
+                .split("\n")
+                .filter((l) => l && !l.startsWith("DTSTART:"))
+                .join("\r\n");
 
-            if(!repeating.includes('\r\n') && !repeating.startsWith('RRULE:')) {
-                repeating = 'RRULE:' + repeating;
+            if (
+                !repeating.includes("\r\n") &&
+                !repeating.startsWith("RRULE:")
+            ) {
+                repeating = "RRULE:" + repeating;
             }
 
-            g += repeating.trim() + '\r\n';
-        }
-        else if (this.data.repeating) {
-            g += 'RRULE:FREQ=' + this.data.repeating.freq;
+            g += repeating.trim() + "\r\n";
+            if (
+                this.data.internalData &&
+                Array.isArray(this.data.internalData.repeatingExcludedDates)
+            ) {
+                g += "EXDATE";
+                if (this.data.timezone) {
+                    g += ";TZID=" + this.timezone();
+                }
+                g +=
+                    ":" +
+                    this.data.internalData.repeatingExcludedDates
+                        .map((it: string) => {
+                            const excludedDate = new Date(
+                                this.data.start as Date | string
+                            );
+                            excludedDate.setFullYear(
+                                parseInt(it.split("-")[0])
+                            );
+                            excludedDate.setMonth(
+                                parseInt(it.split("-")[1]) - 1
+                            );
+                            excludedDate.setDate(parseInt(it.split("-")[2]));
+                            return formatDate(
+                                this.timezone(),
+                                excludedDate,
+                                false,
+                                true
+                            );
+                        })
+                        .join(",") +
+                    "\r\n";
+            }
+        } else if (this.data.repeating) {
+            g += "RRULE:FREQ=" + this.data.repeating.freq;
 
             if (this.data.repeating.count) {
-                g += ';COUNT=' + this.data.repeating.count;
+                g += ";COUNT=" + this.data.repeating.count;
             }
 
             if (this.data.repeating.interval) {
-                g += ';INTERVAL=' + this.data.repeating.interval;
+                g += ";INTERVAL=" + this.data.repeating.interval;
             }
 
             if (this.data.repeating.until) {
-                g += ';UNTIL=' + formatDate(this.calendar.timezone(), this.data.repeating.until, false, this.floating());
+                g +=
+                    ";UNTIL=" +
+                    formatDate(
+                        this.calendar.timezone(),
+                        this.data.repeating.until,
+                        false,
+                        this.floating()
+                    );
             }
 
             if (this.data.repeating.byDay) {
-                g += ';BYDAY=' + this.data.repeating.byDay.join(',');
+                g += ";BYDAY=" + this.data.repeating.byDay.join(",");
             }
 
             if (this.data.repeating.byMonth) {
-                g += ';BYMONTH=' + this.data.repeating.byMonth.join(',');
+                g += ";BYMONTH=" + this.data.repeating.byMonth.join(",");
             }
 
             if (this.data.repeating.byMonthDay) {
-                g += ';BYMONTHDAY=' + this.data.repeating.byMonthDay.join(',');
+                g += ";BYMONTHDAY=" + this.data.repeating.byMonthDay.join(",");
             }
 
             if (this.data.repeating.bySetPos) {
-                g += ';BYSETPOS=' + this.data.repeating.bySetPos.join(',');
+                g += ";BYSETPOS=" + this.data.repeating.bySetPos.join(",");
             }
 
             if (this.data.repeating.startOfWeek) {
-                g += ';WKST=' + this.data.repeating.startOfWeek;
+                g += ";WKST=" + this.data.repeating.startOfWeek;
             }
 
-            g += '\r\n';
+            g += "\r\n";
 
             // REPEATING EXCLUSION
             if (this.data.repeating.exclude) {
                 if (this.data.allDay) {
-                    g += 'EXDATE;VALUE=DATE:' + this.data.repeating.exclude.map(excludedDate => {
-                        return formatDate(this.calendar.timezone(), excludedDate, true);
-                    }).join(',') + '\r\n';
-                }
-                else {
-                    g += 'EXDATE';
+                    g +=
+                        "EXDATE;VALUE=DATE:" +
+                        this.data.repeating.exclude
+                            .map((excludedDate) => {
+                                return formatDate(
+                                    this.calendar.timezone(),
+                                    excludedDate,
+                                    true
+                                );
+                            })
+                            .join(",") +
+                        "\r\n";
+                } else {
+                    g += "EXDATE";
                     if (this.timezone()) {
-                        g += ';TZID=' + this.timezone() + ':' + this.data.repeating.exclude.map(excludedDate => {
-                            // This isn't a 'floating' event because it has a timezone;
-                            // but we use it to omit the 'Z' UTC specifier in formatDate()
-                            return formatDate(this.timezone(), excludedDate, false, true);
-                        }).join(',') + '\r\n';
-                    }
-                    else {
-                        g += ':' + this.data.repeating.exclude.map(excludedDate => {
-                            return formatDate(this.timezone(), excludedDate, false, this.floating());
-                        }).join(',') + '\r\n';
+                        g +=
+                            ";TZID=" +
+                            this.timezone() +
+                            ":" +
+                            this.data.repeating.exclude
+                                .map((excludedDate) => {
+                                    // This isn't a 'floating' event because it has a timezone;
+                                    // but we use it to omit the 'Z' UTC specifier in formatDate()
+                                    return formatDate(
+                                        this.timezone(),
+                                        excludedDate,
+                                        false,
+                                        true
+                                    );
+                                })
+                                .join(",") +
+                            "\r\n";
+                    } else {
+                        g +=
+                            ":" +
+                            this.data.repeating.exclude
+                                .map((excludedDate) => {
+                                    return formatDate(
+                                        this.timezone(),
+                                        excludedDate,
+                                        false,
+                                        this.floating()
+                                    );
+                                })
+                                .join(",") +
+                            "\r\n";
                     }
                 }
+            } else if (
+                this.data.internalData &&
+                Array.isArray(this.data.internalData.repeatingExcludedDates)
+            ) {
+                g += "EXDATE";
+                if (this.data.timezone) {
+                    g += ";TZID=" + this.timezone();
+                }
+                g +=
+                    ":" +
+                    this.data.internalData.repeatingExcludedDates
+                        .map((it: string) => {
+                            const excludedDate = new Date(
+                                this.data.start as Date | string
+                            );
+                            excludedDate.setFullYear(
+                                parseInt(it.split("-")[0])
+                            );
+                            excludedDate.setMonth(
+                                parseInt(it.split("-")[1]) - 1
+                            );
+                            excludedDate.setDate(parseInt(it.split("-")[2]));
+                            return formatDate(
+                                this.timezone(),
+                                excludedDate,
+                                false,
+                                true
+                            );
+                        })
+                        .join(",") +
+                    "\r\n";
             }
         }
 
         // RECURRENCE
         if (this.data.recurrenceId) {
-            g += formatDateTZ(this.timezone(), 'RECURRENCE-ID', this.data.recurrenceId, this.data) + '\r\n';
+            g +=
+                formatDateTZ(
+                    this.timezone(),
+                    "RECURRENCE-ID",
+                    this.data.recurrenceId,
+                    this.data
+                ) + "\r\n";
         }
 
         // SUMMARY
-        g += 'SUMMARY:' + escape(this.data.summary, false) + '\r\n';
+        g += "SUMMARY:" + escape(this.data.summary, false) + "\r\n";
 
         // TRANSPARENCY
         if (this.data.transparency) {
-            g += 'TRANSP:' + escape(this.data.transparency, false) + '\r\n';
+            g += "TRANSP:" + escape(this.data.transparency, false) + "\r\n";
         }
 
         // LOCATION
-        if (this.data.location && 'title' in this.data.location && this.data.location.title) {
-            g += 'LOCATION:' + escape(
-                this.data.location.title +
-                (this.data.location.address ? '\n' + this.data.location.address : ''),
-                false
-            ) + '\r\n';
+        if (
+            this.data.location &&
+            "title" in this.data.location &&
+            this.data.location.title
+        ) {
+            g +=
+                "LOCATION:" +
+                escape(
+                    this.data.location.title +
+                        (this.data.location.address
+                            ? "\n" + this.data.location.address
+                            : ""),
+                    false
+                ) +
+                "\r\n";
 
             if (this.data.location.radius && this.data.location.geo) {
-                g += 'X-APPLE-STRUCTURED-LOCATION;VALUE=URI;' +
-                    (this.data.location.address ? 'X-ADDRESS=' + escape(this.data.location.address, false) + ';' : '') +
-                    'X-APPLE-RADIUS=' + escape(this.data.location.radius, false) + ';' +
-                    'X-TITLE=' + escape(this.data.location.title, false) +
-                    ':geo:' + escape(this.data.location.geo?.lat, false) + ',' +
-                    escape(this.data.location.geo?.lon, false) + '\r\n';
+                g +=
+                    "X-APPLE-STRUCTURED-LOCATION;VALUE=URI;" +
+                    (this.data.location.address
+                        ? "X-ADDRESS=" +
+                          escape(this.data.location.address, false) +
+                          ";"
+                        : "") +
+                    "X-APPLE-RADIUS=" +
+                    escape(this.data.location.radius, false) +
+                    ";" +
+                    "X-TITLE=" +
+                    escape(this.data.location.title, false) +
+                    ":geo:" +
+                    escape(this.data.location.geo?.lat, false) +
+                    "," +
+                    escape(this.data.location.geo?.lon, false) +
+                    "\r\n";
             }
         }
 
         // GEO
         if (this.data.location?.geo?.lat && this.data.location.geo.lon) {
-            g += 'GEO:' + escape(this.data.location.geo.lat, false) + ';' +
-                escape(this.data.location.geo.lon, false) + '\r\n';
+            g +=
+                "GEO:" +
+                escape(this.data.location.geo.lat, false) +
+                ";" +
+                escape(this.data.location.geo.lon, false) +
+                "\r\n";
         }
 
         // DESCRIPTION
         if (this.data.description) {
-            g += 'DESCRIPTION:' + escape(this.data.description.plain, false) + '\r\n';
+            g +=
+                "DESCRIPTION:" +
+                escape(this.data.description.plain, false) +
+                "\r\n";
 
             // HTML DESCRIPTION
             if (this.data.description.html) {
-                g += 'X-ALT-DESC;FMTTYPE=text/html:' + escape(this.data.description.html, false) + '\r\n';
+                g +=
+                    "X-ALT-DESC;FMTTYPE=text/html:" +
+                    escape(this.data.description.html, false) +
+                    "\r\n";
             }
         }
 
         // ORGANIZER
         if (this.data.organizer) {
-            g += 'ORGANIZER;CN="' + escape(this.data.organizer.name, true) + '"';
+            g +=
+                'ORGANIZER;CN="' + escape(this.data.organizer.name, true) + '"';
 
             if (this.data.organizer.sentBy) {
-                g += ';SENT-BY="mailto:' + escape(this.data.organizer.sentBy, true) + '"';
+                g +=
+                    ';SENT-BY="mailto:' +
+                    escape(this.data.organizer.sentBy, true) +
+                    '"';
             }
             if (this.data.organizer.email && this.data.organizer.mailto) {
-                g += ';EMAIL=' + escape(this.data.organizer.email, false);
+                g += ";EMAIL=" + escape(this.data.organizer.email, false);
             }
 
-            g += ':';
-            if(this.data.organizer.email) {
-                g += 'mailto:' + escape(this.data.organizer.mailto || this.data.organizer.email, false);
+            g += ":";
+            if (this.data.organizer.email) {
+                g +=
+                    "mailto:" +
+                    escape(
+                        this.data.organizer.mailto || this.data.organizer.email,
+                        false
+                    );
             }
 
-            g += '\r\n';
+            g += "\r\n";
         }
 
         // ATTENDEES
@@ -1837,36 +2125,42 @@ export default class ICalEvent {
 
         // CATEGORIES
         if (this.data.categories.length > 0) {
-            g += 'CATEGORIES:' + this.data.categories
-                .map(category => category.toString())
-                .join() + '\r\n';
+            g +=
+                "CATEGORIES:" +
+                this.data.categories
+                    .map((category) => category.toString())
+                    .join() +
+                "\r\n";
         }
 
         // URL
         if (this.data.url) {
-            g += 'URL;VALUE=URI:' + escape(this.data.url, false) + '\r\n';
+            g += "URL;VALUE=URI:" + escape(this.data.url, false) + "\r\n";
         }
 
         // ATTACHMENT
         if (this.data.attachments.length > 0) {
-            this.data.attachments.forEach(url => {
-                g += 'ATTACH:' + escape(url, false) + '\r\n';
+            this.data.attachments.forEach((url) => {
+                g += "ATTACH:" + escape(url, false) + "\r\n";
             });
         }
 
         // STATUS
         if (this.data.status) {
-            g += 'STATUS:' + this.data.status.toUpperCase() + '\r\n';
+            g += "STATUS:" + this.data.status.toUpperCase() + "\r\n";
         }
 
         // BUSYSTATUS
         if (this.data.busystatus) {
-            g += 'X-MICROSOFT-CDO-BUSYSTATUS:' + this.data.busystatus.toUpperCase() + '\r\n';
+            g +=
+                "X-MICROSOFT-CDO-BUSYSTATUS:" +
+                this.data.busystatus.toUpperCase() +
+                "\r\n";
         }
 
         // PRIORITY
         if (this.data.priority !== null) {
-            g += 'PRIORITY:' + this.data.priority + '\r\n';
+            g += "PRIORITY:" + this.data.priority + "\r\n";
         }
 
         // CUSTOM X ATTRIBUTES
@@ -1874,19 +2168,25 @@ export default class ICalEvent {
 
         // CREATED
         if (this.data.created) {
-            g += 'CREATED:' + formatDate(this.calendar.timezone(), this.data.created) + '\r\n';
+            g +=
+                "CREATED:" +
+                formatDate(this.calendar.timezone(), this.data.created) +
+                "\r\n";
         }
 
         // LAST-MODIFIED
         if (this.data.lastModified) {
-            g += 'LAST-MODIFIED:' + formatDate(this.calendar.timezone(), this.data.lastModified) + '\r\n';
+            g +=
+                "LAST-MODIFIED:" +
+                formatDate(this.calendar.timezone(), this.data.lastModified) +
+                "\r\n";
         }
 
         if (this.data.class) {
-            g+= 'CLASS:' + this.data.class.toUpperCase() + '\r\n';
+            g += "CLASS:" + this.data.class.toUpperCase() + "\r\n";
         }
 
-        g += 'END:VEVENT\r\n';
+        g += "END:VEVENT\r\n";
         return g;
     }
 }

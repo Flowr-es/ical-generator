@@ -1,16 +1,18 @@
-'use strict';
+"use strict";
 
+import ICalEvent, {
+    type ICalEventData,
+    type ICalEventJSONData,
+} from "./event.ts";
 import {
     addOrGetCustomAttributes,
     checkEnum,
     foldLines,
     generateCustomAttributes,
     isMomentDuration,
-    toDurationString
-} from './tools.ts';
-import ICalEvent, { type ICalEventData, type ICalEventJSONData } from './event.ts';
-import { type ICalMomentDurationStub, type ICalTimezone } from './types.ts';
-
+    toDurationString,
+} from "./tools.ts";
+import { type ICalMomentDurationStub, type ICalTimezone } from "./types.ts";
 
 export interface ICalCalendarData {
     prodId?: ICalCalendarProdIdData | string;
@@ -21,9 +23,13 @@ export interface ICalCalendarData {
     source?: string | null;
     url?: string | null;
     scale?: string | null;
+    timezones?: string[];
     ttl?: number | ICalMomentDurationStub | null;
     events?: (ICalEvent | ICalEventData)[];
-    x?: {key: string, value: string}[] | [string, string][] | Record<string, string>;
+    x?:
+        | { key: string; value: string }[]
+        | [string, string][]
+        | Record<string, string>;
 }
 
 interface ICalCalendarInternalData {
@@ -36,6 +42,7 @@ interface ICalCalendarInternalData {
     url: string | null;
     scale: string | null;
     ttl: number | null;
+    timezones: string[];
     events: ICalEvent[];
     x: [string, string][];
 }
@@ -50,8 +57,9 @@ export interface ICalCalendarJSONData {
     url: string | null;
     scale: string | null;
     ttl: number | null;
+    timezones: string[];
     events: ICalEventJSONData[];
-    x: {key: string, value: string}[];
+    x: { key: string; value: string }[];
 }
 
 export interface ICalCalendarProdIdData {
@@ -61,16 +69,15 @@ export interface ICalCalendarProdIdData {
 }
 
 export enum ICalCalendarMethod {
-    PUBLISH = 'PUBLISH',
-    REQUEST = 'REQUEST',
-    REPLY = 'REPLY',
-    ADD = 'ADD',
-    CANCEL = 'CANCEL',
-    REFRESH = 'REFRESH',
-    COUNTER = 'COUNTER',
-    DECLINECOUNTER = 'DECLINECOUNTER'
+    PUBLISH = "PUBLISH",
+    REQUEST = "REQUEST",
+    REPLY = "REPLY",
+    ADD = "ADD",
+    CANCEL = "CANCEL",
+    REFRESH = "REFRESH",
+    COUNTER = "COUNTER",
+    DECLINECOUNTER = "DECLINECOUNTER",
 }
-
 
 /**
  * Usually you get an {@link ICalCalendar} object like this:
@@ -124,7 +131,7 @@ export default class ICalCalendar {
      */
     constructor(data: ICalCalendarData = {}) {
         this.data = {
-            prodId: '//sebbo.net//ical-generator//EN',
+            prodId: "//sebbo.net//ical-generator//EN",
             method: null,
             name: null,
             description: null,
@@ -133,8 +140,9 @@ export default class ICalCalendar {
             url: null,
             scale: null,
             ttl: null,
+            timezones: [],
             events: [],
-            x: []
+            x: [],
         };
 
         if (data.prodId !== undefined) this.prodId(data.prodId);
@@ -146,10 +154,10 @@ export default class ICalCalendar {
         if (data.url !== undefined) this.url(data.url);
         if (data.scale !== undefined) this.scale(data.scale);
         if (data.ttl !== undefined) this.ttl(data.ttl);
+        if (data.timezones !== undefined) this.timezones(data.timezones);
         if (data.events !== undefined) this.events(data.events);
         if (data.x !== undefined) this.x(data.x);
     }
-
 
     /**
      * Get your feed's prodid. Will always return a string.
@@ -184,27 +192,27 @@ export default class ICalCalendar {
             return this.data.prodId;
         }
 
-        if (typeof prodId === 'string') {
+        if (typeof prodId === "string") {
             this.data.prodId = prodId;
             return this;
         }
 
-        if (typeof prodId !== 'object') {
-            throw new Error('`prodid` needs to be a string or an object!');
+        if (typeof prodId !== "object") {
+            throw new Error("`prodid` needs to be a string or an object!");
         }
 
         if (!prodId.company) {
-            throw new Error('`prodid.company` is a mandatory item!');
+            throw new Error("`prodid.company` is a mandatory item!");
         }
         if (!prodId.product) {
-            throw new Error('`prodid.product` is a mandatory item!');
+            throw new Error("`prodid.product` is a mandatory item!");
         }
 
-        const language = (prodId.language || 'EN').toUpperCase();
-        this.data.prodId = '//' + prodId.company + '//' + prodId.product + '//' + language;
+        const language = (prodId.language || "EN").toUpperCase();
+        this.data.prodId =
+            "//" + prodId.company + "//" + prodId.product + "//" + language;
         return this;
     }
-
 
     /**
      * Get the feed method attribute.
@@ -229,7 +237,9 @@ export default class ICalCalendar {
      * @since 0.2.8
      */
     method(method: ICalCalendarMethod | null): this;
-    method(method?: ICalCalendarMethod | null): this | ICalCalendarMethod | null {
+    method(
+        method?: ICalCalendarMethod | null
+    ): this | ICalCalendarMethod | null {
         if (method === undefined) {
             return this.data.method;
         }
@@ -238,10 +248,12 @@ export default class ICalCalendar {
             return this;
         }
 
-        this.data.method = checkEnum(ICalCalendarMethod, method) as ICalCalendarMethod;
+        this.data.method = checkEnum(
+            ICalCalendarMethod,
+            method
+        ) as ICalCalendarMethod;
         return this;
     }
-
 
     /**
      * Get your feed's name
@@ -283,7 +295,6 @@ export default class ICalCalendar {
         return this;
     }
 
-
     /**
      * Get your feed's description
      * @since 0.2.7
@@ -303,7 +314,6 @@ export default class ICalCalendar {
         this.data.description = description ? String(description) : null;
         return this;
     }
-
 
     /**
      * Get the current calendar timezone
@@ -367,22 +377,18 @@ export default class ICalCalendar {
             return this.data.timezone?.name || null;
         }
 
-        if(timezone === 'UTC') {
+        if (timezone === "UTC") {
             this.data.timezone = null;
-        }
-        else if(typeof timezone === 'string') {
-            this.data.timezone = {name: timezone};
-        }
-        else if(timezone === null) {
+        } else if (typeof timezone === "string") {
+            this.data.timezone = { name: timezone };
+        } else if (timezone === null) {
             this.data.timezone = null;
-        }
-        else {
+        } else {
             this.data.timezone = timezone;
         }
 
         return this;
     }
-
 
     /**
      * Get current value of the `SOURCE` attribute.
@@ -414,7 +420,6 @@ export default class ICalCalendar {
         return this;
     }
 
-
     /**
      * Get your feed's URL
      * @since 0.2.5
@@ -439,7 +444,6 @@ export default class ICalCalendar {
         this.data.url = url || null;
         return this;
     }
-
 
     /**
      * Get current value of the `CALSCALE` attribute. It will
@@ -470,14 +474,12 @@ export default class ICalCalendar {
 
         if (scale === null) {
             this.data.scale = null;
-        }
-        else {
+        } else {
             this.data.scale = scale.toUpperCase();
         }
 
         return this;
     }
-
 
     /**
      * Get the current ttl duration in seconds
@@ -507,17 +509,60 @@ export default class ICalCalendar {
 
         if (isMomentDuration(ttl)) {
             this.data.ttl = ttl.asSeconds();
-        }
-        else if (ttl && ttl > 0) {
+        } else if (ttl && ttl > 0) {
             this.data.ttl = ttl;
-        }
-        else {
+        } else {
             this.data.ttl = null;
         }
 
         return this;
     }
 
+    /**
+     * Adds a timezone to the calendar, only occurs in combination with a timezone generator
+     * see https://www.npmjs.com/package/@touch4it/ical-timezones
+     *
+     * ```javascript
+     * import ical from 'ical-generator';
+     *
+     * // or use require:
+     * // const ical = require('ical-generator');
+     *
+     * const cal = ical();
+     * const event = cal.createTimezone('Europe/Berlin');
+     *
+     * ```
+     *
+     * @since 3.2.0
+     */
+    createTimezone(data: string): string {
+        this.data.timezones.push(data);
+        return data;
+    }
+
+    /**
+     * Returns all timezones of this calendar.
+     *
+     * ```javascript
+     * import ical from 'ical-generator';
+     *
+     * // or use require:
+     * // const ical = require('ical-generator');
+     *
+     * cal.timezones([
+     * 'Europe/Berlin'
+     * ]); --> [string]
+     * cal.timezones();
+     * ```
+     *
+     * @since 3.2.0
+     */
+    timezones(timezones?: string[]): string[] {
+        if (timezones) {
+            timezones.forEach((tz) => this.createTimezone(tz));
+        }
+        return this.data.timezones;
+    }
 
     /**
      * Creates a new {@link ICalEvent} and returns it. Use options to prefill the event's attributes.
@@ -539,11 +584,11 @@ export default class ICalCalendar {
      * @since 0.2.0
      */
     createEvent(data: ICalEvent | ICalEventData): ICalEvent {
-        const event = data instanceof ICalEvent ? data : new ICalEvent(data, this);
+        const event =
+            data instanceof ICalEvent ? data : new ICalEvent(data, this);
         this.data.events.push(event);
         return event;
     }
-
 
     /**
      * Returns all events of this calendar.
@@ -599,7 +644,6 @@ export default class ICalCalendar {
         return this;
     }
 
-
     /**
      * Remove all events from the calendar without
      * touching any other data like name or prodId.
@@ -610,7 +654,6 @@ export default class ICalCalendar {
         this.data.events = [];
         return this;
     }
-
 
     /**
      * Set X-* attributes. Woun't filter double attributes,
@@ -644,7 +687,12 @@ export default class ICalCalendar {
      *
      * @since 1.9.0
      */
-    x (keyOrArray: {key: string, value: string}[] | [string, string][] | Record<string, string>): this;
+    x(
+        keyOrArray:
+            | { key: string; value: string }[]
+            | [string, string][]
+            | Record<string, string>
+    ): this;
 
     /**
      * Set a X-* attribute. Woun't filter double attributes,
@@ -665,31 +713,35 @@ export default class ICalCalendar {
      *
      * @since 1.9.0
      */
-    x (keyOrArray: string, value: string): this;
+    x(keyOrArray: string, value: string): this;
 
     /**
      * Get all custom X-* attributes.
      * @since 1.9.0
      */
-    x (): {key: string, value: string}[];
-    x (keyOrArray?: {key: string, value: string}[] | [string, string][] | Record<string, string> | string, value?: string): this | void | ({key: string, value: string})[] {
-        if(keyOrArray === undefined) {
-            return addOrGetCustomAttributes (this.data);
+    x(): { key: string; value: string }[];
+    x(
+        keyOrArray?:
+            | { key: string; value: string }[]
+            | [string, string][]
+            | Record<string, string>
+            | string,
+        value?: string
+    ): this | void | { key: string; value: string }[] {
+        if (keyOrArray === undefined) {
+            return addOrGetCustomAttributes(this.data);
         }
 
-        if(typeof keyOrArray === 'string' && typeof value === 'string') {
-            addOrGetCustomAttributes (this.data, keyOrArray, value);
-        }
-        else if(typeof keyOrArray === 'object') {
-            addOrGetCustomAttributes (this.data, keyOrArray);
-        }
-        else {
-            throw new Error('Either key or value is not a string!');
+        if (typeof keyOrArray === "string" && typeof value === "string") {
+            addOrGetCustomAttributes(this.data, keyOrArray, value);
+        } else if (typeof keyOrArray === "object") {
+            addOrGetCustomAttributes(this.data, keyOrArray);
+        } else {
+            throw new Error("Either key or value is not a string!");
         }
 
         return this;
     }
-
 
     /**
      * Return a shallow copy of the calendar's options for JSON stringification.
@@ -709,11 +761,10 @@ export default class ICalCalendar {
     toJSON(): ICalCalendarJSONData {
         return Object.assign({}, this.data, {
             timezone: this.timezone(),
-            events: this.data.events.map(event => event.toJSON()),
-            x: this.x()
+            events: this.data.events.map((event) => event.toJSON()),
+            x: this.x(),
         });
     }
-
 
     /**
      * Get the number of events added to your calendar
@@ -721,7 +772,6 @@ export default class ICalCalendar {
     length(): number {
         return this.data.events.length;
     }
-
 
     /**
      * Return generated calendar as a string.
@@ -732,85 +782,93 @@ export default class ICalCalendar {
      * ```
      */
     toString(): string {
-        let g = '';
+        let g = "";
 
         // VCALENDAR and VERSION
-        g = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\n';
+        g = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\n";
 
         // PRODID
-        g += 'PRODID:-' + this.data.prodId + '\r\n';
+        g += "PRODID:-" + this.data.prodId + "\r\n";
 
         // URL
         if (this.data.url) {
-            g += 'URL:' + this.data.url + '\r\n';
+            g += "URL:" + this.data.url + "\r\n";
         }
 
         // SOURCE
         if (this.data.source) {
-            g += 'SOURCE;VALUE=URI:' + this.data.source + '\r\n';
+            g += "SOURCE;VALUE=URI:" + this.data.source + "\r\n";
         }
 
         // CALSCALE
         if (this.data.scale) {
-            g += 'CALSCALE:' + this.data.scale + '\r\n';
+            g += "CALSCALE:" + this.data.scale + "\r\n";
         }
 
         // METHOD
         if (this.data.method) {
-            g += 'METHOD:' + this.data.method + '\r\n';
+            g += "METHOD:" + this.data.method + "\r\n";
         }
 
         // NAME
         if (this.data.name) {
-            g += 'NAME:' + this.data.name + '\r\n';
-            g += 'X-WR-CALNAME:' + this.data.name + '\r\n';
+            g += "NAME:" + this.data.name + "\r\n";
+            g += "X-WR-CALNAME:" + this.data.name + "\r\n";
         }
 
         // Description
         if (this.data.description) {
-            g += 'X-WR-CALDESC:' + this.data.description + '\r\n';
+            g += "X-WR-CALDESC:" + this.data.description + "\r\n";
         }
 
-        // Timezone
-        if(this.data.timezone?.generator) {
-            const timezones = [...new Set([
-                this.timezone(),
-                ...this.data.events.map(event => event.timezone())
-            ])].filter(tz => tz !== null && !tz.startsWith('/')) as string[];
-
-            timezones.forEach(tz => {
-                if(!this.data.timezone?.generator) {
-                    return;
-                }
-
-                const s = this.data.timezone.generator(tz);
-                if(!s) {
-                    return;
-                }
-
-                g += s.replace(/\r\n/g, '\n')
-                    .replace(/\n/g, '\r\n')
-                    .trim() + '\r\n';
-            });
-        }
+        // Timezone Name
         if (this.data.timezone?.name) {
-            g += 'TIMEZONE-ID:' + this.data.timezone.name + '\r\n';
-            g += 'X-WR-TIMEZONE:' + this.data.timezone.name + '\r\n';
+            g += "TIMEZONE-ID:" + this.data.timezone.name + "\r\n";
+            g += "X-WR-TIMEZONE:" + this.data.timezone.name + "\r\n";
         }
 
         // TTL
         if (this.data.ttl) {
-            g += 'REFRESH-INTERVAL;VALUE=DURATION:' + toDurationString(this.data.ttl) + '\r\n';
-            g += 'X-PUBLISHED-TTL:' + toDurationString(this.data.ttl) + '\r\n';
+            g +=
+                "REFRESH-INTERVAL;VALUE=DURATION:" +
+                toDurationString(this.data.ttl) +
+                "\r\n";
+            g += "X-PUBLISHED-TTL:" + toDurationString(this.data.ttl) + "\r\n";
         }
-
-        // Events
-        this.data.events.forEach(event => g += event.toString());
 
         // CUSTOM X ATTRIBUTES
         g += generateCustomAttributes(this.data);
 
-        g += 'END:VCALENDAR';
+        // Timezone Generator
+        if (this.data.timezone?.generator) {
+            const timezones = [
+                ...new Set([
+                    this.timezone(),
+                    ...this.data.timezones,
+                    ...this.data.events.map((event) => event.timezone()),
+                ]),
+            ].filter((tz) => tz !== null && !tz.startsWith("/")) as string[];
+
+            timezones.forEach((tz) => {
+                if (!this.data.timezone?.generator) {
+                    return;
+                }
+
+                const s = this.data.timezone.generator(tz);
+                if (!s) {
+                    return;
+                }
+
+                g +=
+                    s.replace(/\r\n/g, "\n").replace(/\n/g, "\r\n").trim() +
+                    "\r\n";
+            });
+        }
+
+        // Events
+        this.data.events.forEach((event) => (g += event.toString()));
+
+        g += "END:VCALENDAR";
 
         return foldLines(g);
     }

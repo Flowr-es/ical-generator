@@ -1,8 +1,13 @@
 'use strict';
 
 import assert from 'assert';
+import { DateTime } from 'luxon';
 import moment from 'moment-timezone';
+import rrule from 'rrule';
+import ICalAlarm, { ICalAlarmType } from '../src/alarm.js';
+import ICalAttendee from '../src/attendee.js';
 import ICalCalendar from '../src/calendar.js';
+import ICalCategory from '../src/category.js';
 import ICalEvent, {
     ICalEventBusyStatus,
     ICalEventClass,
@@ -10,13 +15,16 @@ import ICalEvent, {
     ICalEventTransparency,
     type ICalEventData
 } from '../src/event.js';
-import { ICalEventRepeatingFreq, ICalWeekday } from '../src/types.js';
-import ICalAttendee from '../src/attendee.js';
-import ICalAlarm, { ICalAlarmType } from '../src/alarm.js';
-import ICalCategory from '../src/category.js';
 import { isRRule } from '../src/tools.js';
-import rrule from 'rrule';
-import {DateTime} from 'luxon';
+import { ICalEventRepeatingFreq, ICalWeekday } from '../src/types.js';
+// import rrule from 'rrule';
+// import ICalAlarm, { ICalAlarmType } from '../src/alarm.js';
+// import ICalAttendee from '../src/attendee.js';
+// import ICalCalendar from '../src/calendar.js';
+// import ICalCategory from '../src/category.js';
+// import ICalEvent, { ICalEventBusyStatus, ICalEventClass, ICalEventData, ICalEventStatus, ICalEventTransparency } from '../src/event.js';
+// import { isRRule } from '../src/tools.js';
+// import { ICalEventRepeatingFreq, ICalWeekday } from '../src/types.js';
 
 describe('ical-generator Event', function () {
     describe('constructor()', function () {
@@ -50,7 +58,8 @@ describe('ical-generator Event', function () {
                 created: new Date().toJSON(),
                 lastModified: new Date().toJSON(),
                 class: null,
-                x: []
+                x: [],
+                internalData: []
             };
             const event = new ICalEvent(data, new ICalCalendar());
             assert.deepStrictEqual(event.toJSON(), data);
@@ -2067,7 +2076,7 @@ describe('ical-generator Event', function () {
         it('should render allday events for luxon dates with timezone correct', function () {
             const cal = new ICalCalendar();
             const luxonStartDate = DateTime.fromISO('2024-03-17T00:00:00.000+01:00', {setZone: true});
-            const luxonEndDate = DateTime.fromISO('2024-03-18T00:00:00.000+01:00', {setZone: true});
+            const luxonEndDate = DateTime.fromISO('2024-03-18T00:00:01.000+01:00', {setZone: true});
             const event = new ICalEvent({
                 allDay: true,
                 start: luxonStartDate,
@@ -2083,6 +2092,26 @@ describe('ical-generator Event', function () {
 
             assert.match(actual, new RegExp(`DTSTART;VALUE=DATE:${luxonStartDate.toFormat('yyyyLLdd')}\r\n`), 'for DTSTART');
             assert.match(actual, new RegExp(`DTEND;VALUE=DATE:${luxonEndDate.toFormat('yyyyLLdd')}\r\n`), 'for DTEND');
+        });
+        
+        it('should handle internalData excludeRepeatingOptions', function () {
+            const cal = new ICalCalendar();
+            const event = new ICalEvent({
+                start: new Date('2023-11-10T21:00:00.000Z'),
+                end: new Date('2023-11-10T22:00:00.000Z'),
+                repeating: {
+                    freq: ICalEventRepeatingFreq.WEEKLY,
+                    interval: 1,
+                    startOfWeek: ICalWeekday.MO,
+                    count: 10,
+                    byDay: [ICalWeekday.FR]
+                },
+                internalData: {
+                    repeatingExcludedDates: ['2023-11-17', '2023-12-01']
+                }
+            }, cal);
+            assert.ok(event.toString().includes('EXDATE'), 'with EXDATE');
+
         });
     });
 });

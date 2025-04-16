@@ -1,5 +1,11 @@
 {
   "author": "Sebastian Pekarek <mail@sebbo.net>",
+  "contributors": [
+    {
+      "name": "Carlos Knoke Flores",
+      "email": "carlos@knoke.net"
+    }
+  ],
   "bugs": {
     "url": "http://github.com/sebbo2002/ical-generator/issues"
   },
@@ -69,9 +75,11 @@
     "alarms"
   ],
   "license": "MIT",
+  "main-old": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "name": "@flowr-es/ical-generator",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
-  "name": "ical-generator",
   "peerDependencies": {
     "@touch4it/ical-timezones": ">=1.6.0",
     "@types/luxon": ">= 1.26.0",

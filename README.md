@@ -25,6 +25,9 @@ to generate subscriptionable calendar feeds.
 
 
 
+## FORKED contains timezones array for calendars - version is more or less the original version
+
+
 ## 📦 Installation
 
 	npm install ical-generator
