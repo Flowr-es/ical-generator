@@ -1,13 +1,14 @@
 'use strict';
 
 
-import {addOrGetCustomAttributes, checkEnum, checkNameAndMail, escape} from './tools.js';
-import ICalEvent from './event.js';
+import {addOrGetCustomAttributes, checkEnum, checkNameAndMail, escape} from './tools.ts';
+import type ICalEvent from './event.ts';
+import type ICalAlarm from './alarm.ts';
 
 
 interface ICalInternalAttendeeData {
     name: string | null;
-    email: string | null;
+    email: string;
     mailto: string | null;
     sentBy: string | null;
     status: ICalAttendeeStatus | null;
@@ -21,7 +22,7 @@ interface ICalInternalAttendeeData {
 
 export interface ICalAttendeeData {
     name?: string | null;
-    email?: string | null;
+    email: string;
     mailto?: string | null;
     sentBy?: string | null;
     status?: ICalAttendeeStatus | null;
@@ -37,7 +38,7 @@ export interface ICalAttendeeData {
 
 export interface ICalAttendeeJSONData {
     name: string | null;
-    email: string | null;
+    email: string;
     mailto: string | null;
     sentBy: string | null;
     status: ICalAttendeeStatus | null;
@@ -75,38 +76,38 @@ export enum ICalAttendeeType {
 
 
 /**
- * Usually you get an `ICalAttendee` object like this:
+ * Usually you get an {@link ICalAttendee} object like this:
  *
  * ```javascript
  * import ical from 'ical-generator';
  * const calendar = ical();
  * const event = calendar.createEvent();
- * const attendee = event.createAttendee();
+ * const attendee = event.createAttendee({ email: 'mail@example.com' });
  * ```
  *
- * You can also use the [[`ICalAttendee`]] object directly:
+ * You can also use the {@link ICalAttendee} object directly:
  *
  * ```javascript
  * import ical, {ICalAttendee} from 'ical-generator';
- * const attendee = new ICalAttendee();
+ * const attendee = new ICalAttendee({ email: 'mail@example.com' });
  * event.attendees([attendee]);
  * ```
  */
 export default class ICalAttendee {
     private readonly data: ICalInternalAttendeeData;
-    private readonly event: ICalEvent;
+    private readonly parent: ICalEvent | ICalAlarm;
 
     /**
-     * Constructor of [[`ICalAttendee`]]. The event reference is
+     * Constructor of {@link ICalAttendee}. The event reference is
      * required to query the calendar's timezone when required.
      *
      * @param data Attendee Data
-     * @param calendar Reference to ICalEvent object
+     * @param parent Reference to ICalEvent object
      */
-    constructor(data: ICalAttendeeData, event: ICalEvent) {
+    constructor(data: ICalAttendeeData, parent: ICalEvent | ICalAlarm) {
         this.data = {
             name: null,
-            email: null,
+            email: '',
             mailto: null,
             sentBy: null,
             status: null,
@@ -117,24 +118,27 @@ export default class ICalAttendee {
             delegatedFrom: null,
             x: []
         };
-        this.event = event;
-        if (!this.event) {
+        this.parent = parent;
+        if (!this.parent) {
             throw new Error('`event` option required!');
         }
+        if (!data.email) {
+            throw new Error('No value for `email` in ICalAttendee given!');
+        }
 
-        data.name !== undefined && this.name(data.name);
-        data.email !== undefined && this.email(data.email);
-        data.mailto !== undefined && this.mailto(data.mailto);
-        data.sentBy !== undefined && this.sentBy(data.sentBy);
-        data.status !== undefined && this.status(data.status);
-        data.role !== undefined && this.role(data.role);
-        data.rsvp !== undefined && this.rsvp(data.rsvp);
-        data.type !== undefined && this.type(data.type);
-        data.delegatedTo !== undefined && this.delegatedTo(data.delegatedTo);
-        data.delegatedFrom !== undefined && this.delegatedFrom(data.delegatedFrom);
-        data.delegatesTo && this.delegatesTo(data.delegatesTo);
-        data.delegatesFrom && this.delegatesFrom(data.delegatesFrom);
-        data.x !== undefined && this.x(data.x);
+        if (data.name !== undefined) this.name(data.name);
+        if (data.email !== undefined) this.email(data.email);
+        if (data.mailto !== undefined) this.mailto(data.mailto);
+        if (data.sentBy !== undefined) this.sentBy(data.sentBy);
+        if (data.status !== undefined) this.status(data.status);
+        if (data.role !== undefined) this.role(data.role);
+        if (data.rsvp !== undefined) this.rsvp(data.rsvp);
+        if (data.type !== undefined) this.type(data.type);
+        if (data.delegatedTo !== undefined) this.delegatedTo(data.delegatedTo);
+        if (data.delegatedFrom !== undefined) this.delegatedFrom(data.delegatedFrom);
+        if (data.delegatesTo) this.delegatesTo(data.delegatesTo);
+        if (data.delegatesFrom) this.delegatesFrom(data.delegatesFrom);
+        if (data.x !== undefined) this.x(data.x);
     }
 
 
@@ -163,14 +167,14 @@ export default class ICalAttendee {
      * Get the attendee's email address
      * @since 0.2.0
      */
-    email(): string | null;
+    email(): string;
 
     /**
      * Set the attendee's email address
      * @since 0.2.0
      */
-    email(email: string | null): this;
-    email(email?: string | null): this | string | null {
+    email(email: string): this;
+    email(email?: string): this | string {
         if (!email) {
             return this.data.email;
         }
@@ -229,7 +233,7 @@ export default class ICalAttendee {
 
     /**
      * Set the attendee's role, defaults to `REQ` / `REQ-PARTICIPANT`.
-     * Checkout [[`ICalAttendeeRole`]] for available roles.
+     * Checkout {@link ICalAttendeeRole} for available roles.
      *
      * @since 0.2.0
      */
@@ -276,7 +280,7 @@ export default class ICalAttendee {
     status(): ICalAttendeeStatus | null;
 
     /**
-     * Set the attendee's status. See [[`ICalAttendeeStatus`]]
+     * Set the attendee's status. See {@link ICalAttendeeStatus}
      * for available status options.
      *
      * @since 0.2.0
@@ -304,7 +308,7 @@ export default class ICalAttendee {
 
     /**
      * Set attendee's type (a.k.a. CUTYPE).
-     * See [[`ICalAttendeeType`]] for available status options.
+     * See {@link ICalAttendeeType} for available status options.
      *
      * @since 0.2.3
      */
@@ -333,7 +337,7 @@ export default class ICalAttendee {
      * Set the attendee's delegated-to field.
      *
      * Creates a new Attendee if the passed object is not already a
-     * [[`ICalAttendee`]] object. Will set the `delegatedTo` and
+     * {@link ICalAttendee} object. Will set the `delegatedTo` and
      * `delegatedFrom` attributes.
      *
      * Will also set the `status` to `DELEGATED`, if attribute is set.
@@ -363,15 +367,15 @@ export default class ICalAttendee {
 
         if(typeof delegatedTo === 'string') {
             this.data.delegatedTo = new ICalAttendee(
-                checkNameAndMail('delegatedTo', delegatedTo),
-                this.event,
+                { email: delegatedTo, ...checkNameAndMail('delegatedTo', delegatedTo) },
+                this.parent,
             );
         }
         else if(delegatedTo instanceof ICalAttendee) {
             this.data.delegatedTo = delegatedTo;
         }
         else {
-            this.data.delegatedTo = new ICalAttendee(delegatedTo, this.event);
+            this.data.delegatedTo = new ICalAttendee(delegatedTo, this.parent);
         }
 
         this.data.status = ICalAttendeeStatus.DELEGATED;
@@ -389,7 +393,7 @@ export default class ICalAttendee {
      * Set the attendee's delegated-from field
      *
      * Creates a new Attendee if the passed object is not already a
-     * [[`ICalAttendee`]] object. Will set the `delegatedTo` and
+     * {@link ICalAttendee} object. Will set the `delegatedTo` and
      * `delegatedFrom` attributes.
      *
      * @param delegatedFrom
@@ -405,15 +409,15 @@ export default class ICalAttendee {
         }
         else if(typeof delegatedFrom === 'string') {
             this.data.delegatedFrom = new ICalAttendee(
-                checkNameAndMail('delegatedFrom', delegatedFrom),
-                this.event,
+                { email: delegatedFrom, ...checkNameAndMail('delegatedFrom', delegatedFrom) },
+                this.parent,
             );
         }
         else if(delegatedFrom instanceof ICalAttendee) {
             this.data.delegatedFrom = delegatedFrom;
         }
         else {
-            this.data.delegatedFrom = new ICalAttendee(delegatedFrom, this.event);
+            this.data.delegatedFrom = new ICalAttendee(delegatedFrom, this.parent);
         }
 
         return this;
@@ -423,7 +427,7 @@ export default class ICalAttendee {
     /**
      * Create a new attendee this attendee delegates to and returns
      * this new attendee. Creates a new attendee if the passed object
-     * is not already an [[`ICalAttendee`]].
+     * is not already an {@link ICalAttendee}.
      *
      * ```javascript
      * const cal = ical();
@@ -436,7 +440,7 @@ export default class ICalAttendee {
      * @since 0.2.0
      */
     delegatesTo (options: ICalAttendee | ICalAttendeeData | string): ICalAttendee {
-        const a = options instanceof ICalAttendee ? options : this.event.createAttendee(options);
+        const a = options instanceof ICalAttendee ? options : this.parent.createAttendee(options);
         this.delegatedTo(a);
         a.delegatedFrom(this);
         return a;
@@ -446,7 +450,7 @@ export default class ICalAttendee {
     /**
      * Create a new attendee this attendee delegates from and returns
      * this new attendee. Creates a new attendee if the passed object
-     * is not already an [[`ICalAttendee`]].
+     * is not already an {@link ICalAttendee}.
      *
      * ```javascript
      * const cal = ical();
@@ -459,7 +463,7 @@ export default class ICalAttendee {
      * @since 0.2.0
      */
     delegatesFrom (options: ICalAttendee | ICalAttendeeData | string): ICalAttendee {
-        const a = options instanceof ICalAttendee ? options : this.event.createAttendee(options);
+        const a = options instanceof ICalAttendee ? options : this.parent.createAttendee(options);
         this.delegatedFrom(a);
         a.delegatedTo(this);
         return a;

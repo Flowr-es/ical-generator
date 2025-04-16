@@ -1,20 +1,23 @@
 'use strict';
 
 
-import {escape} from './tools.js';
+import {escape} from './tools.ts';
 
 
 export interface ICalCategoryData {
-    name?: string | null
+    name: string;
 }
 
-export interface ICalCategoryInternalData {
-    name: string | null
+
+export interface ICalCategoryJSONData {
+    name: string;
 }
+
+export type ICalCategoryInternalData = ICalCategoryJSONData;
 
 
 /**
- * Usually you get an `ICalCategory` object like this:
+ * Usually you get an {@link ICalCategory} object like this:
  *
  * ```javascript
  * import ical from 'ical-generator';
@@ -23,7 +26,7 @@ export interface ICalCategoryInternalData {
  * const category = event.createCategory();
  * ```
  *
- * You can also use the [[`ICalCategory`]] object directly:
+ * You can also use the {@link ICalCategory} object directly:
  *
  * ```javascript
  * import ical, {ICalCategory} from 'ical-generator';
@@ -35,15 +38,19 @@ export default class ICalCategory {
     private readonly data: ICalCategoryInternalData;
 
     /**
-     * Constructor of [[`ICalCategory`]].
+     * Constructor of {@link ICalCategory}.
      * @param data Category Data
      */
     constructor(data: ICalCategoryData) {
         this.data = {
-            name: null
+            name: ''
         };
 
-        data.name !== undefined && this.name(data.name);
+        if(!data.name) {
+            throw new Error('No value for `name` in ICalCategory given!');
+        }
+
+        this.name(data.name);
     }
 
 
@@ -51,19 +58,19 @@ export default class ICalCategory {
      * Get the category name
      * @since 0.3.0
      */
-    name(): string | null;
+    name(): string;
 
     /**
      * Set the category name
      * @since 0.3.0
      */
-    name(name: string | null): this;
-    name(name?: string | null): this | string | null {
+    name(name: string): this;
+    name(name?: string): this | string {
         if (name === undefined) {
             return this.data.name;
         }
 
-        this.data.name = name || null;
+        this.data.name = name;
         return this;
     }
 
@@ -89,10 +96,6 @@ export default class ICalCategory {
     toString(): string {
 
         // CN / Name
-        if (!this.data.name) {
-            throw new Error('No value for `name` in ICalCategory given!');
-        }
-
         return escape(this.data.name, false);
     }
 }

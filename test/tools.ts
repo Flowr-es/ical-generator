@@ -7,7 +7,15 @@ import {DateTime} from 'luxon';
 import dayjs from 'dayjs';
 import dayJsUTCPlugin from 'dayjs/plugin/utc.js';
 import dayJsTimezonePlugin from 'dayjs/plugin/timezone.js';
-import {formatDate, formatDateTZ, foldLines, escape, checkDate, toDate} from '../src/tools.js';
+import {
+    checkDate,
+    escape,
+    foldLines,
+    formatDate,
+    formatDateTZ,
+    toDate,
+    toDurationString
+} from '../src/tools.js';
 
 dayjs.extend(dayJsUTCPlugin);
 dayjs.extend(dayJsTimezonePlugin);
@@ -61,6 +69,12 @@ describe('ICalTools', function () {
                 assert.strictEqual(
                     formatDate('Europe/Berlin', '2018-07-05T18:24:00.052', true, true),
                     '20180705'
+                );
+            });
+            it('should work with / prefixed global timezones', function () {
+                assert.strictEqual(
+                    formatDate('/Europe/Berlin', '2018-07-05T18:24:00.052', false, false),
+                    '20180705T182400'
                 );
             });
         });
@@ -127,6 +141,12 @@ describe('ICalTools', function () {
                 assert.strictEqual(
                     formatDate(null, DateTime.fromISO('2018-07-05T18:24:00.052'), true, false),
                     '20180705'
+                );
+            });
+            it('should work with dateonly flag, non floating, and date with timezone', function () {
+                assert.strictEqual(
+                    formatDate(null, DateTime.fromISO('2024-03-17T00:00:00.000+01:00', {setZone: true}), true),
+                    '20240317'
                 );
             });
         });
@@ -289,7 +309,7 @@ describe('ICalTools', function () {
                 assert.equal(checkDate(date, 'foo'), date);
             });
             it('should throw error for invalid Moment', function () {
-                const date = moment('foo');
+                const date = moment('foo', 'MM/DD/YYYY', true);
                 assert.throws(() => {
                     checkDate(date, 'foo');
                 }, /`foo` has to be a valid date!/);
@@ -333,6 +353,18 @@ describe('ICalTools', function () {
         it('should work with luxon DateTime object', function () {
             const date = new Date();
             assert.deepStrictEqual(toDate(DateTime.fromJSDate(date)), date);
+        });
+    });
+
+    describe('toDurationString()', function () {
+        it('should work', async function () {
+            assert.strictEqual(toDurationString(0), 'PT0S');
+            assert.strictEqual(toDurationString(1), 'PT1S');
+            assert.strictEqual(toDurationString(60), 'PT1M');
+            assert.strictEqual(toDurationString(3600), 'PT1H');
+            assert.strictEqual(toDurationString(86400), 'P1D');
+
+            assert.strictEqual(toDurationString(-3600), '-PT1H');
         });
     });
 });

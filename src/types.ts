@@ -19,11 +19,17 @@ export interface ICalRepeatingOptions {
     startOfWeek?: ICalWeekday;
 }
 
-export interface ICalLocation {
+export type ICalLocation = ICalLocationWithTitle | ICalLocationWithoutTitle;
+
+export interface ICalLocationWithTitle {
     title: string;
     address?: string;
     radius?: number;
     geo?: ICalGeo;
+}
+
+export interface ICalLocationWithoutTitle {
+    geo: ICalGeo;
 }
 
 export interface ICalGeo {
@@ -70,6 +76,7 @@ export interface ICalMomentDurationStub {
 
 export interface ICalLuxonDateTimeStub {
     setZone(zone?: string): ICalLuxonDateTimeStub;
+    zone: { type: string; };
     toFormat(fmt: string): string;
     toJSDate(): Date;
     get isValid(): boolean;

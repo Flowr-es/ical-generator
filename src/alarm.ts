@@ -1,6 +1,6 @@
 'use strict';
 
-import ICalEvent from './event.js';
+import type ICalEvent from './event.ts';
 import {
     addOrGetCustomAttributes,
     formatDate,
@@ -8,14 +8,17 @@ import {
     generateCustomAttributes,
     checkDate,
     toDurationString,
-    toJSON
-} from './tools.js';
-import {ICalDateTimeValue} from './types.js';
+    toJSON,
+    checkNameAndMail
+} from './tools.ts';
+import { type ICalDateTimeValue } from './types.ts';
+import ICalAttendee, { type ICalAttendeeData } from './attendee.ts';
 
 
 export enum ICalAlarmType {
     display = 'display',
-    audio = 'audio'
+    audio = 'audio',
+    email = 'email'
 }
 
 export const ICalAlarmRelatesTo = {
@@ -32,44 +35,60 @@ export interface ICalAttachment {
     mime: string | null;
 }
 
-export interface ICalAlarmData {
-    type?: ICalAlarmType | null;
-    trigger?: number | ICalDateTimeValue | null;
+export type ICalAlarmData = ICalAlarmBaseData |
+    ICalAlarmTriggerData |
+    ICalAlarmTriggerAfterData |
+    ICalAlarmTriggerBeforeData;
+
+export type ICalAlarmTriggerData = ICalAlarmBaseData & { trigger: number | ICalDateTimeValue };
+export type ICalAlarmTriggerAfterData = ICalAlarmBaseData & { triggerAfter: number | ICalDateTimeValue };
+export type ICalAlarmTriggerBeforeData = ICalAlarmBaseData & { triggerBefore: number | ICalDateTimeValue };
+
+export interface ICalAlarmBaseData {
+    type?: ICalAlarmType;
     relatesTo?: ICalAlarmRelatesTo | null;
-    triggerBefore?: number | ICalDateTimeValue | null;
-    triggerAfter?: number | ICalDateTimeValue | null;
-    repeat?: number | null;
-    interval?: number | null;
+    repeat?: ICalAlarmRepeatData | null;
     attach?: string | ICalAttachment | null;
     description?: string | null;
+    summary?: string | null;
+    attendees?: ICalAttendee[] | ICalAttendeeData[];
     x?: {key: string, value: string}[] | [string, string][] | Record<string, string>;
 }
 
+export interface ICalAlarmRepeatData {
+    times: number;
+    interval: number;
+}
+
 interface ICalInternalAlarmData {
-    type: ICalAlarmType | null;
-    trigger: ICalDateTimeValue | number | null;
+    type: ICalAlarmType;
+    trigger: ICalDateTimeValue | number;
     relatesTo: ICalAlarmRelatesTo | null;
-    repeat: number | null;
+    repeat: ICalAlarmRepeatData | null;
     interval: number | null;
     attach: ICalAttachment | null;
     description: string | null;
+    summary: string | null;
+    attendees: ICalAttendee[];
     x: [string, string][];
 }
 
 export interface ICalAlarmJSONData {
-    type: ICalAlarmType | null;
-    trigger: string | number | null;
+    type: ICalAlarmType;
+    trigger: string | number;
     relatesTo: ICalAlarmRelatesTo | null;
-    repeat: number | null;
+    repeat: ICalAlarmRepeatData | null;
     interval: number | null;
     attach: ICalAttachment | null;
     description: string | null;
+    summary: string | null;
+    attendees: ICalAttendee[];
     x: {key: string, value: string}[];
 }
 
 
 /**
- * Usually you get an `ICalAlarm` object like this:
+ * Usually you get an {@link ICalAlarm} object like this:
  *
  * ```javascript
  * import ical from 'ical-generator';
@@ -78,7 +97,7 @@ export interface ICalAlarmJSONData {
  * const alarm = event.createAlarm();
  * ```
  *
- * You can also use the [[`ICalAlarm`]] object directly:
+ * You can also use the {@link ICalAlarm} object directly:
  *
  * ```javascript
  * import ical, {ICalAlarm} from 'ical-generator';
@@ -91,21 +110,23 @@ export default class ICalAlarm {
     private readonly event: ICalEvent;
 
     /**
-     * Constructor of [[`ICalAttendee`]]. The event reference is required
+     * Constructor of {@link ICalAttendee}. The event reference is required
      * to query the calendar's timezone and summary when required.
      *
      * @param data Alarm Data
-     * @param calendar Reference to ICalEvent object
+     * @param event Reference to ICalEvent object
      */
     constructor (data: ICalAlarmData, event: ICalEvent) {
         this.data = {
-            type: null,
-            trigger: null,
+            type: ICalAlarmType.display,
+            trigger: -600,
             relatesTo: null,
             repeat: null,
             interval: null,
             attach: null,
             description: null,
+            summary: null,
+            attendees: [],
             x: []
         };
 
@@ -114,15 +135,16 @@ export default class ICalAlarm {
             throw new Error('`event` option required!');
         }
 
-        data.type !== undefined && this.type(data.type);
-        data.trigger !== undefined && this.trigger(data.trigger);
-        data.triggerBefore !== undefined && this.triggerBefore(data.triggerBefore);
-        data.triggerAfter !== undefined && this.triggerAfter(data.triggerAfter);
-        data.repeat !== undefined && this.repeat(data.repeat);
-        data.interval !== undefined && this.interval(data.interval);
-        data.attach !== undefined && this.attach(data.attach);
-        data.description !== undefined && this.description(data.description);
-        data.x !== undefined && this.x(data.x);
+        if (data.type !== undefined) this.type(data.type);
+        if ('trigger' in data && data.trigger !== undefined) this.trigger(data.trigger);
+        if ('triggerBefore' in data && data.triggerBefore !== undefined) this.triggerBefore(data.triggerBefore);
+        if ('triggerAfter' in data && data.triggerAfter !== undefined) this.triggerAfter(data.triggerAfter);
+        if (data.repeat) this.repeat(data.repeat);
+        if (data.attach !== undefined) this.attach(data.attach);
+        if (data.description !== undefined) this.description(data.description);
+        if (data.summary !== undefined) this.summary(data.summary);
+        if (data.attendees !== undefined) this.attendees(data.attendees);
+        if (data.x !== undefined) this.x(data.x);
     }
 
 
@@ -130,24 +152,19 @@ export default class ICalAlarm {
      * Get the alarm type
      * @since 0.2.1
      */
-    type (type: ICalAlarmType | null): this;
+    type (type: ICalAlarmType): this;
 
     /**
-     * Set the alarm type. See [[`ICalAlarmType`]]
+     * Set the alarm type. See {@link ICalAlarmType}
      * for available status options.
      * @since 0.2.1
      */
-    type (): ICalAlarmType | null;
-    type (type?: ICalAlarmType | null): this | ICalAlarmType | null {
+    type (): ICalAlarmType;
+    type (type?: ICalAlarmType): this | ICalAlarmType {
         if (type === undefined) {
             return this.data.type;
         }
-        if (!type) {
-            this.data.type = null;
-            return this;
-        }
-
-        if (!Object.keys(ICalAlarmType).includes(type)) {
+        if (!type || !Object.keys(ICalAlarmType).includes(type)) {
             throw new Error('`type` is not correct, must be either `display` or `audio`!');
         }
 
@@ -158,14 +175,14 @@ export default class ICalAlarm {
 
     /**
      * Get the trigger time for the alarm. Can either
-     * be a date and time value ([[`ICalDateTimeValue`]]) or
+     * be a date and time value ({@link ICalDateTimeValue}) or
      * a number, which will represent the seconds between
      * alarm and event start. The number is negative, if the
      * alarm is triggered after the event started.
      *
      * @since 0.2.1
      */
-    trigger (): number | ICalDateTimeValue | null;
+    trigger (): number | ICalDateTimeValue;
 
     /**
      * Use this method to set the alarm time.
@@ -185,28 +202,22 @@ export default class ICalAlarm {
      *
      * @since 0.2.1
      */
-    trigger (trigger: number | ICalDateTimeValue | Date | null): this;
-    trigger (trigger?: number | ICalDateTimeValue | Date | null): this | number | ICalDateTimeValue | null {
+    trigger (trigger: number | ICalDateTimeValue | Date): this;
+    trigger (trigger?: number | ICalDateTimeValue | Date): this | number | ICalDateTimeValue {
 
         // Getter
         if (trigger === undefined && typeof this.data.trigger === 'number') {
             return -1 * this.data.trigger;
         }
-        if (trigger === undefined && this.data.trigger) {
-            return this.data.trigger;
-        }
         if (trigger === undefined) {
-            return null;
+            return this.data.trigger;
         }
 
         // Setter
-        if (!trigger) {
-            this.data.trigger = null;
-        }
-        else if (typeof trigger === 'number' && isFinite(trigger)) {
+        if (typeof trigger === 'number' && isFinite(trigger)) {
             this.data.trigger = -1 * trigger;
         }
-        else if(typeof trigger === 'number') {
+        else if(!trigger || typeof trigger === 'number') {
             throw new Error('`trigger` is not correct, must be a finite number or a supported date!');
         }
         else {
@@ -268,14 +279,14 @@ export default class ICalAlarm {
 
     /**
      * Get the trigger time for the alarm. Can either
-     * be a date and time value ([[`ICalDateTimeValue`]]) or
+     * be a date and time value ({@link ICalDateTimeValue}) or
      * a number, which will represent the seconds between
      * alarm and event start. The number is negative, if the
      * alarm is triggered before the event started.
      *
      * @since 0.2.1
      */
-    triggerAfter (): number | ICalDateTimeValue | null;
+    triggerAfter (): number | ICalDateTimeValue;
 
     /**
      * Use this method to set the alarm time. Unlike `trigger`, this time
@@ -295,8 +306,8 @@ export default class ICalAlarm {
      *
      * @since 0.2.1
      */
-    triggerAfter (trigger: number | ICalDateTimeValue | null): this;
-    triggerAfter (trigger?: number | ICalDateTimeValue | null): this | number | ICalDateTimeValue | null {
+    triggerAfter (trigger: number | ICalDateTimeValue): this;
+    triggerAfter (trigger?: number | ICalDateTimeValue): this | number | ICalDateTimeValue {
         if (trigger === undefined) {
             return this.data.trigger;
         }
@@ -307,15 +318,16 @@ export default class ICalAlarm {
 
     /**
      * Get the trigger time for the alarm. Can either
-     * be a date and time value ([[`ICalDateTimeValue`]]) or
+     * be a date and time value ({@link ICalDateTimeValue}) or
      * a number, which will represent the seconds between
      * alarm and event start. The number is negative, if the
      * alarm is triggered after the event started.
      *
      * @since 0.2.1
-     * @alias trigger
+     * @see {@link trigger}
+     * @see {@link triggerAfter}
      */
-    triggerBefore (trigger: number | ICalDateTimeValue | null): this;
+    triggerBefore (trigger: number | ICalDateTimeValue): this;
 
     /**
      * Use this method to set the alarm time.
@@ -334,10 +346,11 @@ export default class ICalAlarm {
      * for details about supported values and timezone handling.
      *
      * @since 0.2.1
-     * @alias trigger
+     * @see {@link trigger}
+     * @see {@link triggerAfter}
      */
-    triggerBefore (): number | ICalDateTimeValue | null;
-    triggerBefore (trigger?: number | ICalDateTimeValue | null): this | number | ICalDateTimeValue | null {
+    triggerBefore (): number | ICalDateTimeValue;
+    triggerBefore (trigger?: number | ICalDateTimeValue): this | number | ICalDateTimeValue {
         if(trigger === undefined) {
             return this.trigger();
         }
@@ -350,7 +363,7 @@ export default class ICalAlarm {
      * Get Alarm Repetitions
      * @since 0.2.1
      */
-    repeat(): number | null;
+    repeat(): ICalAlarmRepeatData | null;
 
     /**
      * Set Alarm Repetitions. Use this to repeat the alarm.
@@ -361,15 +374,17 @@ export default class ICalAlarm {
      *
      * // repeat the alarm 4 times every 5 minutes…
      * cal.createAlarm({
-     *     repeat: 4,
-     *     interval: 300
+     *     repeat: {
+     *         times: 4,
+     *         interval: 300
+     *     }
      * });
      * ```
      *
      * @since 0.2.1
      */
-    repeat(repeat: number | null): this;
-    repeat (repeat?: number | null): this | number | null {
+    repeat(repeat: ICalAlarmRepeatData | null): this;
+    repeat (repeat?: ICalAlarmRepeatData | null): this | ICalAlarmRepeatData | null {
         if (repeat === undefined) {
             return this.data.repeat;
         }
@@ -378,52 +393,17 @@ export default class ICalAlarm {
             return this;
         }
 
-        if (typeof repeat !== 'number' || !isFinite(repeat)) {
-            throw new Error('`repeat` is not correct, must be numeric!');
+        if (typeof repeat !== 'object') {
+            throw new Error('`repeat` is not correct, must be an object!');
+        }
+        if (typeof repeat.times !== 'number' || !isFinite(repeat.times)) {
+            throw new Error('`repeat.times` is not correct, must be numeric!');
+        }
+        if (typeof repeat.interval !== 'number' || !isFinite(repeat.interval)) {
+            throw new Error('`repeat.interval` is not correct, must be numeric!');
         }
 
         this.data.repeat = repeat;
-        return this;
-    }
-
-
-    /**
-     * Get Repeat Interval
-     * @since 0.2.1
-     */
-    interval (interval: number | null): this;
-
-    /**
-     * Set Repeat Interval
-     *
-     * ```javascript
-     * const cal = ical();
-     * const event = cal.createEvent();
-     *
-     * // repeat the alarm 4 times every 5 minutes…
-     * cal.createAlarm({
-     *     repeat: 4,
-     *     interval: 300
-     * });
-     * ```
-     *
-     * @since 0.2.1
-     */
-    interval(): number | null;
-    interval (interval?: number | null): this | number | null {
-        if (interval === undefined) {
-            return this.data.interval || null;
-        }
-        if (!interval) {
-            this.data.interval = null;
-            return this;
-        }
-
-        if (typeof interval !== 'number' || !isFinite(interval)) {
-            throw new Error('`interval` is not correct, must be numeric!');
-        }
-
-        this.data.interval = interval;
         return this;
     }
 
@@ -502,7 +482,8 @@ export default class ICalAlarm {
 
     /**
      * Get the alarm description. Used to set the alarm message
-     * if alarm type is display. Defaults to the event's summary.
+     * if alarm type is `display`. If the alarm type is `email`, it's
+     * used to set the email body. Defaults to the event's summary.
      *
      * @since 0.2.1
      */
@@ -510,7 +491,8 @@ export default class ICalAlarm {
 
     /**
      * Set the alarm description. Used to set the alarm message
-     * if alarm type is display. Defaults to the event's summary.
+     * if alarm type is `display`. If the alarm type is `email`, it's
+     * used to set the email body. Defaults to the event's summary.
      *
      * @since 0.2.1
      */
@@ -525,6 +507,79 @@ export default class ICalAlarm {
         }
 
         this.data.description = description;
+        return this;
+    }
+
+
+    /**
+     * Get the alarm summary. Used to set the email subject
+     * if alarm type is `email`. Defaults to the event's summary.
+     *
+     * @since 7.0.0
+     */
+    summary (): string | null;
+
+    /**
+     * Set the alarm summary. Used to set the email subject
+     * if alarm type is display. Defaults to the event's summary.
+     *
+     * @since 0.2.1
+     */
+    summary (summary: string | null): this;
+    summary (summary?: string | null): this | string | null {
+        if (summary === undefined) {
+            return this.data.summary;
+        }
+        if (!summary) {
+            this.data.summary = null;
+            return this;
+        }
+
+        this.data.summary = summary;
+        return this;
+    }
+
+
+    /**
+     * Creates a new {@link ICalAttendee} and returns it. Use options to prefill
+     * the attendee's attributes. Calling this method without options will create
+     * an empty attendee.
+     *
+     * @since 7.0.0
+     */
+    createAttendee(data: ICalAttendee | ICalAttendeeData | string): ICalAttendee {
+        if (data instanceof ICalAttendee) {
+            this.data.attendees.push(data);
+            return data;
+        }
+        if (typeof data === 'string') {
+            data = { email: data, ...checkNameAndMail('data', data) };
+        }
+
+        const attendee = new ICalAttendee(data, this);
+        this.data.attendees.push(attendee);
+        return attendee;
+    }
+
+
+    /**
+     * Get all attendees
+     * @since 7.0.0
+     */
+    attendees(): ICalAttendee[];
+
+    /**
+     * Add multiple attendees to your event
+     *
+     * @since 7.0.0
+     */
+    attendees(attendees: (ICalAttendee | ICalAttendeeData | string)[]): this;
+    attendees(attendees?: (ICalAttendee | ICalAttendeeData | string)[]): this | ICalAttendee[] {
+        if (!attendees) {
+            return this.data.attendees;
+        }
+
+        attendees.forEach(attendee => this.createAttendee(attendee));
         return this;
     }
 
@@ -619,13 +674,6 @@ export default class ICalAlarm {
     toString (): string {
         let g = 'BEGIN:VALARM\r\n';
 
-        if (!this.data.type) {
-            throw new Error('No value for `type` in ICalAlarm given!');
-        }
-        if (!this.data.trigger) {
-            throw new Error('No value for `trigger` in ICalAlarm given!');
-        }
-
         // ACTION
         g += 'ACTION:' + this.data.type.toUpperCase() + '\r\n';
 
@@ -638,26 +686,23 @@ export default class ICalAlarm {
             }
         } 
         else if (typeof this.data.trigger === 'number') {
-            g += 'TRIGGER;RELATED=' + this.data.relatesTo.toUpperCase() + ':' + toDurationString(this.data.trigger) + '\r\n';
+            g += 'TRIGGER;RELATED=' + this.data.relatesTo?.toUpperCase() + ':' + toDurationString(this.data.trigger) + '\r\n';
         }
         else {
             g += 'TRIGGER;VALUE=DATE-TIME:' + formatDate(this.event.timezone(), this.data.trigger) + '\r\n';
         }
 
         // REPEAT
-        if (this.data.repeat && !this.data.interval) {
-            throw new Error('No value for `interval` in ICalAlarm given, but required for `repeat`!');
-        }
         if (this.data.repeat) {
-            g += 'REPEAT:' + this.data.repeat + '\r\n';
-        }
+            if (!this.data.repeat.times) {
+                throw new Error('No value for `repeat.times` in ICalAlarm given, but required for `interval`!');
+            }
+            if (!this.data.repeat.interval) {
+                throw new Error('No value for `repeat.interval` in ICalAlarm given, but required for `repeat`!');
+            }
 
-        // INTERVAL
-        if (this.data.interval && !this.data.repeat) {
-            throw new Error('No value for `repeat` in ICalAlarm given, but required for `interval`!');
-        }
-        if (this.data.interval) {
-            g += 'DURATION:' + toDurationString(this.data.interval) + '\r\n';
+            g += 'REPEAT:' + this.data.repeat.times + '\r\n';
+            g += 'DURATION:' + toDurationString(this.data.repeat.interval) + '\r\n';
         }
 
         // ATTACH
@@ -672,11 +717,26 @@ export default class ICalAlarm {
         }
 
         // DESCRIPTION
-        if (this.data.type === 'display' && this.data.description) {
+        if (this.data.type !== 'audio' && this.data.description) {
             g += 'DESCRIPTION:' + escape(this.data.description, false) + '\r\n';
         }
-        else if (this.data.type === 'display') {
+        else if (this.data.type !== 'audio') {
             g += 'DESCRIPTION:' + escape(this.event.summary(), false) + '\r\n';
+        }
+
+        // SUMMARY
+        if (this.data.type === 'email' && this.data.summary) {
+            g += 'SUMMARY:' + escape(this.data.summary, false) + '\r\n';
+        }
+        else if (this.data.type === 'email') {
+            g += 'SUMMARY:' + escape(this.event.summary(), false) + '\r\n';
+        }
+
+        // ATTENDEES
+        if (this.data.type === 'email') {
+            this.data.attendees.forEach(attendee => {
+                g += attendee.toString();
+            });
         }
 
         // CUSTOM X ATTRIBUTES

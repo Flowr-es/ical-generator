@@ -1,9 +1,6 @@
 {
-    "cache": false,
     "check-coverage": true,
-    "extension": [
-        ".ts"
-    ],
+    "extends": "@istanbuljs/nyc-config-typescript",
     "include": [
         "src/**/*.ts"
     ],
@@ -21,10 +18,9 @@
         "html"
     ],
     "all": true,
-    "instrument": true,
     "branches": 95,
     "lines": 95,
-    "functions": 92,
-    "statements": 95,
+    "functions": 100,
+    "statements": 98,
     "per-file": true
 }

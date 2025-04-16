@@ -16,16 +16,26 @@ configuration.plugins.push(['@semantic-release/commit-analyzer', {
         {'type': 'chore', 'scope': 'package', 'release': 'patch'},
         {'type': 'build', 'scope': 'deps', 'release': 'patch'},
         {'type': 'docs', 'release': 'patch'}
-    ]
+    ],
+    'parserOpts': {
+        'noteKeywords': [
+            'BREAKING CHANGE',
+            'BREAKING CHANGES'
+        ]
+    }
 }]);
 
 configuration.plugins.push('@semantic-release/release-notes-generator');
 
-configuration.plugins.push('@semantic-release/changelog');
+if (process.env.BRANCH === 'main') {
+    configuration.plugins.push('@semantic-release/changelog');
+}
 
 configuration.plugins.push('semantic-release-license');
 
 configuration.plugins.push('@semantic-release/npm');
+
+configuration.plugins.push('@sebbo2002/semantic-release-jsr');
 
 configuration.plugins.push(['@semantic-release/exec', {
     'prepareCmd': './.github/workflows/build.sh'
@@ -41,7 +51,7 @@ configuration.plugins.push(['@semantic-release/github', {
 }]);
 
 configuration.plugins.push(['@semantic-release/git', {
-    'assets': ['CHANGELOG.md', 'LICENSE'],
+    'assets': ['CHANGELOG.md', 'LICENSE', 'package-lock.json', 'package.json'],
     'message': 'chore(release): :bookmark: ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}'
 }]);
 
